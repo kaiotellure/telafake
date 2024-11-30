@@ -1,0 +1,22 @@
+---
+import Input from './Input.astro';
+
+interface Props {
+	name: string;
+	image: string;
+}
+
+const { name, image } = Astro.props;
+---
+
+<div class="flex flex-col gap-4">
+	<!-- The product headline infos -->
+	<div class="flex items-center gap-4">
+		<img class="w-32 aspect-square rounded" src={image} />
+		<span class="text-2xl font-bold">{name}</span>
+	</div>
+	<!-- The billing and payment infos -->
+	<div class="bg-white rounded p-4 border border-zinc-300 shadow">
+		<Input />
+	</div>
+</div>
