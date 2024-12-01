@@ -16,18 +16,17 @@ const maskCPF = (value: string) => {
 }
 
 const maskEmail = (value: string) => {
-    console.log(value)
     return value
 }
 
-const emailREGEX = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g
+const emailREGEX = /^\S+@\S+\.\S+$/g
 
 const FORMATTERS = {
     cpf: {
         mask: maskCPF, validate: (v: string) => CPF.validate(v)
     },
     email: {
-        mask: maskEmail, validate: (v:string) => emailREGEX.test(v)
+        mask: maskEmail, validate: (v: string) => emailREGEX.test(v)
     },
     empty: {
         mask: (v: string) => v, validate: (v: string) => v.replaceAll(` `, ``).length > 0
