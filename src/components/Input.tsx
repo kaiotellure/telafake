@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, type PropsWithChildren } from "react"
 import { twMerge as cn } from "tailwind-merge"
 import CPF from "cpf-check";
 
@@ -33,7 +33,7 @@ const FORMATTERS = {
     }
 }
 
-export default function Input({ name, formatter }: Props) {
+export default function Input({ name, formatter, children }: Props & PropsWithChildren) {
     const [content, setContent] = useState(``);
     const [error, setError] = useState(``);
 
@@ -66,6 +66,7 @@ export default function Input({ name, formatter }: Props) {
         </label>
 
         {error && <IconError className="absolute right-3 top-[50%] transform -translate-y-1/2" />}
+        {children}
     </div>
 }
 

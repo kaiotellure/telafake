@@ -1,3 +1,6 @@
+import { cn } from "./utils"
+import type { PropsWithRef, Ref } from "react"
+
 export function IconCard() {
     return <svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="credit-card" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" className="svg-inline--fa fa-credit-card fa-w-18 mr-2 w-4 h-4 sm:w-6 sm:h-6"><path fill="currentColor" d="M527.9 32H48.1C21.5 32 0 53.5 0 80v352c0 26.5 21.5 48 48.1 48h479.8c26.6 0 48.1-21.5 48.1-48V80c0-26.5-21.5-48-48.1-48zM54.1 80h467.8c3.3 0 6 2.7 6 6v42H48.1V86c0-3.3 2.7-6 6-6zm467.8 352H54.1c-3.3 0-6-2.7-6-6V256h479.8v170c0 3.3-2.7 6-6 6zM192 332v40c0 6.6-5.4 12-12 12h-72c-6.6 0-12-5.4-12-12v-40c0-6.6 5.4-12 12-12h72c6.6 0 12 5.4 12 12zm192 0v40c0 6.6-5.4 12-12 12H236c-6.6 0-12-5.4-12-12v-40c0-6.6 5.4-12 12-12h136c6.6 0 12 5.4 12 12z"></path></svg>
 }
@@ -14,12 +17,16 @@ export function BadgeCorrect() {
     return <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 absolute text-green-500 -top-1 -right-2"><g fill="none" fill-rule="evenodd"><path d="M16 8c0 4.418-3.582 8-8 8s-8-3.582-8-8 3.582-8 8-8 8 3.582 8 8z" fill="currentColor"></path> <path stroke="#FFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M11.092 6L7.003 9.914 5 7.911"></path></g></svg>
 }
 
-export function IconSecurity() {
-    <svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" viewBox="0 0 512.005 512.005" content="Nós protegemos seus dados<br>de pagamento usando encriptação<br>para prover segurança<br> no nível de bancos." className="w-[20px] h-[20px] text-black" data-tippy-directive="" tabindex="0"><path fill="currentColor" d="M256.003,234.672c-11.76,0-21.333,9.573-21.333,21.333c0,7.792,4.409,14.329,10.667,18.053v13.947
+export function IconSecurity({className}: {className?: string}) {
+    return <svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" viewBox="0 0 512.005 512.005" className={cn("w-[20px] h-[20px] text-black", className)} data-tippy-directive="" tabIndex={0}><path fill="currentColor" d="M256.003,234.672c-11.76,0-21.333,9.573-21.333,21.333c0,7.792,4.409,14.329,10.667,18.053v13.947
 				c0,5.896,4.771,10.667,10.667,10.667c5.896,0,10.667-4.771,10.667-10.667v-13.947c6.258-3.724,10.667-10.262,10.667-18.053
 				C277.336,244.245,267.763,234.672,256.003,234.672z"></path> <path fill="currentColor" d="M256.003,149.339c-17.646,0-32,14.354-32,32v10.667h64v-10.667C288.003,163.693,273.648,149.339,256.003,149.339z"></path> <path fill="currentColor" d="M440.888,64.609l-181.333-64c-2.292-0.813-4.812-0.813-7.104,0l-181.333,64c-4.26,1.51-7.115,5.542-7.115,10.063v128
 				c0,165.646,24.563,226.188,187.198,308.188c1.51,0.76,3.156,1.146,4.802,1.146c1.646,0,3.292-0.385,4.802-1.146
 				c162.635-82,187.198-142.542,187.198-308.188v-128C448.003,70.151,445.148,66.12,440.888,64.609z M352.003,320.005
 				c0,11.76-9.573,21.333-21.333,21.333H181.336c-11.76,0-21.333-9.573-21.333-21.333V213.339c0-11.76,9.573-21.333,21.333-21.333
 				v-10.667c0-41.167,33.5-74.667,74.667-74.667s74.667,33.5,74.667,74.667v10.667c11.76,0,21.333,9.573,21.333,21.333V320.005z"></path></svg>
+}
+
+export function IconDoubt({className}: {className?: string}) {
+    return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" className={cn("w-[20px] h-[20px] text-black", className)} data-tippy-directive="" tabIndex="0"><path fill="currentColor" d="M10 20a10 10 0 1 1 0-20 10 10 0 0 1 0 20zm2-13c0 .28-.21.8-.42 1L10 9.58c-.57.58-1 1.6-1 2.42v1h2v-1c0-.29.21-.8.42-1L13 9.42c.57-.58 1-1.6 1-2.42a4 4 0 1 0-8 0h2a2 2 0 1 1 4 0zm-3 8v2h2v-2H9z"></path></svg>
 }

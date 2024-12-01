@@ -1,12 +1,35 @@
+
 import Input from '../components/Input';
 import Tab from '../components/Tab';
-import { IconBoleto, IconCard, IconPix, IconSecurity } from './Icons';
+
+import { IconBoleto, IconCard, IconDoubt, IconPix, IconSecurity } from './Icons';
 
 function CardView() {
-	return <div className='p-4'>
-		<Input name='Número de Cartão de Crédito' formatter='ccnumber'>
-			<IconSecurity className="" />
+	const currentYear = new Date().getFullYear();
+
+	return <div className='p-4 space-y-2'>
+		<Input name='Número de Cartão de Crédito' formatter='empty'>
+			<IconSecurity className="absolute right-3 top-[50%] transform -translate-y-1/2" />
 		</Input>
+		<div className='flex gap-2'>
+			<select className='w-5/12 px-4 py-2 rounded border bg-transparent'>
+				<option value="" disabled selected>Mês</option>
+				{Array.from({ length: 12 }, (_, i) => (
+					<option value={i + 1}>{i + 1}</option>
+				))}
+			</select>
+
+			<select className='w-7/12 px-4 py-2 rounded border bg-transparent'>
+				<option value="" disabled selected>Ano</option>
+				{Array.from({ length: 12 }, (_, i) => (
+					<option value={currentYear + i}>{currentYear + i}</option>
+				))}
+			</select>
+
+			<Input name='Cód. segurança' formatter='empty'>
+				<IconDoubt className="absolute right-3 top-[50%] transform -translate-y-1/2" />
+			</Input>
+		</div>
 	</div>
 }
 
