@@ -30,7 +30,29 @@ function CardView() {
 				<IconDoubt className="absolute right-3 top-[50%] transform -translate-y-1/2" />
 			</Input>
 		</div>
+
+		<select className='w-full px-4 py-2 rounded border bg-transparent'>
+			<option value="" disabled selected>Parcelas</option>
+			{Array.from({ length: 12 }, (_, i) => {
+
+				const times = 12 - i;
+
+				if (times == 1) {
+					return <option value={times}>
+						R$ {(97).toFixed(2).replace('.', ',')}
+					</option>
+				}
+
+				return <option value={times}>
+					{times}x de R$ {price(97, 2.9956 / 100, times).toFixed(2).replace('.', ',')}
+				</option>
+			})}
+		</select>
 	</div>
+}
+
+function price(total: number, tax: number, slices: number) {
+	return total * tax / (1 - (1 + tax) ** -slices)
 }
 
 function BoletoView() {
