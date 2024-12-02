@@ -8,7 +8,7 @@ function CardView() {
 	const currentYear = new Date().getFullYear();
 
 	return <div className='p-4 space-y-2'>
-		<Input name='Número de Cartão de Crédito' formatter='empty'>
+		<Input name='Número de Cartão de Crédito' max={19} formatter='cc'>
 			<IconSecurity className="absolute right-3 top-[50%] transform -translate-y-1/2" />
 		</Input>
 		<div className='flex gap-2'>
@@ -26,19 +26,18 @@ function CardView() {
 				))}
 			</select>
 
-			<Input name='Cód. segurança' formatter='empty'>
+			<Input name='Cód. segurança' formatter='cvv' max={4}>
 				<IconDoubt className="absolute right-3 top-[50%] transform -translate-y-1/2" />
 			</Input>
 		</div>
 
 		<select className='w-full px-4 py-2 rounded border bg-transparent'>
-			<option value="" disabled selected>Parcelas</option>
 			{Array.from({ length: 12 }, (_, i) => {
 
 				const times = 12 - i;
 
 				if (times == 1) {
-					return <option value={times}>
+					return <option selected value={times}>
 						R$ {(97).toFixed(2).replace('.', ',')}
 					</option>
 				}

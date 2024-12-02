@@ -1,9 +1,12 @@
 import { useState, type PropsWithChildren } from "react"
 import { twMerge as cn } from "tailwind-merge"
+
+import CC from 'card-validator';
 import CPF from "cpf-check";
 
 interface Props {
     name: string; formatter: keyof typeof FORMATTERS;
+    max?: number;
 }
 
 const maskCPF = (value: string) => {
@@ -13,6 +16,19 @@ const maskCPF = (value: string) => {
         .replace(/(\d{3})(\d)/, '$1.$2')
         .replace(/(\d{3})(\d{1,2})/, '$1-$2')
         .replace(/(-\d{2})\d+?$/, '$1') // captura 2 numeros seguidos de um traço e não deixa ser digitado mais nada
+}
+
+const maskCC = (value: string) => {
+    return value
+        .replace(/\D/g, '') // substitui qualquer caracter que nao seja numero por nada
+        .replace(/(\d{4})(\d)/, '$1 $2')
+        .replace(/(\d{4})(\d)/, '$1 $2')
+        .replace(/(\d{4})(\d)/, '$1 $2')
+}
+
+const maskCVV = (value: string) => {
+    return value
+        .replace(/\D/g, '') // substitui qualquer caracter que nao seja numero por nada
 }
 
 const maskEmail = (value: string) => {
@@ -28,12 +44,25 @@ const FORMATTERS = {
     email: {
         mask: maskEmail, validate: (v: string) => emailREGEX.test(v)
     },
+    cc: {
+        mask: maskCC, validate: (v: string) => {
+            return CC.number(v).isValid
+        }
+    },
+    cvv: {
+        mask: maskCVV, validate: (v: string) => {
+            return CC.cvv(v, 4).isValid
+        }
+    },
     empty: {
         mask: (v: string) => v, validate: (v: string) => v.replaceAll(` `, ``).length > 0
     }
 }
 
-export default function Input({ name, formatter, children }: Props & PropsWithChildren) {
+export default function Input({
+    name, formatter, children, max
+}: Props & PropsWithChildren) {
+
     const [content, setContent] = useState(``);
     const [error, setError] = useState(``);
 
@@ -49,7 +78,7 @@ export default function Input({ name, formatter, children }: Props & PropsWithCh
 
     return <div className="relative w-full">
         <input
-            value={content} type="text"
+            value={content} type="text" maxLength={max}
             onChange={e => transform(e.target.value)}
             className={cn(
                 "px-3 py-2 pt-4 w-full border rounded peer outline-none",
