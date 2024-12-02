@@ -4,11 +4,6 @@ import { twMerge as cn } from "tailwind-merge"
 import CC from 'card-validator';
 import CPF from "cpf-check";
 
-interface Props {
-    name: string; formatter: keyof typeof FORMATTERS;
-    max?: number;
-}
-
 const maskCPF = (value: string) => {
     return value
         .replace(/\D/g, '') // substitui qualquer caracter que nao seja numero por nada
@@ -59,11 +54,16 @@ const FORMATTERS = {
     }
 }
 
+interface Props {
+    name: string; formatter: keyof typeof FORMATTERS;
+    max?: number; report: (field: string, value: string) => void;
+}
+
 export default function Input({
-    name, formatter, children, max
+    name, formatter, children, max, report
 }: Props & PropsWithChildren) {
 
-    const [content, setContent] = useState(``);
+    const [value, setValue] = useState(``);
     const [error, setError] = useState(``);
 
     const f = FORMATTERS[formatter];
@@ -72,13 +72,13 @@ export default function Input({
         const masked = f.mask(value);
         const valid = f.validate(masked);
 
-        setContent(masked);
+        setValue(masked); report(name, masked);
         setError(valid ? `` : `${name} inválido`);
     }
 
     return <div className="relative w-full">
         <input
-            value={content} type="text" maxLength={max}
+            value={value} type="text" maxLength={max}
             onChange={e => transform(e.target.value)}
             className={cn(
                 "px-3 py-2 pt-4 w-full border rounded peer outline-none",
@@ -88,7 +88,7 @@ export default function Input({
 
         <label className={cn(
             "duration-100 text-zinc-500 left-3 transform -translate-y-1/2 absolute pointer-events-none peer-focus:text-xs peer-focus:top-3",
-            content == `` ? `top-[50%]` : `text-xs top-3`,
+            value == `` ? `top-[50%]` : `text-xs top-3`,
             error ? `text-red-600` : ``
         )}>
             {error ? error : name}

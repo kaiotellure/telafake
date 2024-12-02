@@ -1,4 +1,4 @@
-import { useState, type FC } from "react"
+import type { FC } from "react"
 import { BadgeCorrect } from "./Icons";
 import { cn } from "./utils";
 
@@ -27,17 +27,18 @@ function TabOption({ name, selected, Icon, onClick }: TabOptionProps) {
 
 interface TabProps {
     options: TabOptionProps[];
+    selected: number, setSelected: React.Dispatch<React.SetStateAction<number>>;
+    report: (field: string, value: string) => void;
 }
 
-export default function Tab({ options }: TabProps) {
-    const [selected, setSelected] = useState(0);
+export default function Tab({ options, selected, setSelected, report }: TabProps) {
     const current = options[selected];
 
     return <div className="w-full">
         <div className="flex gap-2">
             {options.map((option, i) => (
                 <TabOption {...option}
-                    onClick={() => setSelected(i)}
+                    onClick={() => {setSelected(i); report("tab", i.toString())}}
                     selected={selected == i}
                 />
             ))}

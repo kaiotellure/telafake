@@ -1,15 +1,20 @@
 
+import { useRef, useState } from 'react';
 import Input from '../components/Input';
 import Tab from '../components/Tab';
 
 import { IconBoleto, IconCard, IconDoubt, IconPix, IconSecurity } from './Icons';
 
-function CardView() {
+interface CardViewProps {
+	receive: (field: string, value: string) => void;
+}
+
+function CardView({ receive }: CardViewProps) {
 	const currentYear = new Date().getFullYear();
 
 	return <div>
 		<div className='p-4 space-y-2 border rounded bg-zinc-50'>
-			<Input name='Número de Cartão de Crédito' max={19} formatter='cc'>
+			<Input report={receive} name='Número de Cartão de Crédito' max={19} formatter='cc'>
 				<IconSecurity className="absolute right-3 top-[50%] transform -translate-y-1/2" />
 			</Input>
 			<div className='flex gap-2'>
@@ -27,7 +32,7 @@ function CardView() {
 					))}
 				</select>
 
-				<Input name='Cód. segurança' formatter='cvv' max={4}>
+				<Input report={receive} name='Cód. segurança' formatter='cvv' max={4}>
 					<IconDoubt className="absolute right-3 top-[50%] transform -translate-y-1/2" />
 				</Input>
 			</div>
@@ -100,6 +105,29 @@ interface CheckoutProps {
 }
 
 export default function Checkout({ name, image }: CheckoutProps) {
+	const values = useRef<{ [id: string]: string }>({});
+
+	const proceed = () => {
+		console.log(values.current);
+	}
+
+	const receive = (field: string, value: string) => {
+		values.current[field] = value;
+	}
+
+	return <PaymentScreen name={name} image={image} proceed={proceed} receive={receive} />
+}
+
+interface PaymentScreenProps {
+	name: string;
+	image: string;
+	receive: (field: string, value: string) => void;
+	proceed: () => void;
+}
+
+function PaymentScreen({ name, image, receive, proceed }: PaymentScreenProps) {
+	const [tabIndex, setTabIndex] = useState(0);
+
 	return <div className="flex flex-col gap-8 w-[700px] font-opensans">
 		{/* The product headline infos */}
 		<div className="flex items-center gap-4 px-4">
@@ -108,38 +136,51 @@ export default function Checkout({ name, image }: CheckoutProps) {
 		</div>
 		{/* The billing and payment infos */}
 		<div className="flex flex-col gap-2 bg-white rounded p-6 border border-zinc-300 shadow">
-			<Input name='Nome completo' formatter='empty' />
-			<Input name='Email' formatter='email' />
-			<Input name='Confirmar email' formatter='email' />
+			<Input report={receive} name='Nome completo' formatter='empty' />
+
+			<Input report={receive} name='Email' formatter='email' />
+			<Input report={receive} name='Confirmar email' formatter='email' />
+
 			<div className="flex gap-2 mb-6">
-				<Input name='CPF' formatter='cpf' />
-				<Input name='Celular com DDD' formatter='empty' />
+				<Input report={receive} name='CPF' formatter='cpf' />
+				<Input report={receive} name='Celular com DDD' formatter='empty' />
 			</div>
-			<Tab options={[
-				{ name: "Cartão", Icon: IconCard, View: CardView },
+
+			<Tab report={receive} selected={tabIndex} setSelected={setTabIndex} options={[
+				{
+					name: "Cartão", Icon: IconCard,
+					View: () => <CardView receive={receive} />
+				},
 				{ name: "Boleto", Icon: IconBoleto, View: BoletoView },
 				{ name: "Pix", Icon: IconPix, View: PixView }
 			]} />
 
-			<div className='flex flex-col gap-2 flex-col items-center'>
-				<button className='w-full rounded bg-[#46c900] p-4 text-white text-lg font-semibold hover:opacity-75'>PAGAR AGORA</button>
+			<div className='flex gap-2 flex-col items-center'>
+				{/* The pay now button */}
+				<button onClick={proceed} className='w-full rounded bg-[#46c900] p-4 text-white text-lg font-semibold hover:opacity-75'>
+					PAGAR AGORA
+				</button>
+				{/* The kiwify logo button */}
 				<a target='_blank' href="https://www.kiwify.com.br">
 					<img width="80" src="https://assets.kiwify.com.br/extra/footer-kiwify-gray.png" className="w-20 my-2"></img>
 				</a>
+				{/* The language selection button */}
 				<select className='mb-2 px-4 py-1 text-sm text-zinc-400 rounded border bg-transparent'>
 					<option value="brazil">🇧🇷 Brasil</option>
 					<option value="intl">🌎 Internacional</option>
 				</select>
+				{/* The legal article stuff */}
 				<article className='opacity-50 flex flex-col space-y-1 text-[.65rem] text-gray-500 text-center'>
 					<div>
-						Ao clicar em 'Pagar Agora', eu declaro que (i) estou ciente que a Kiwify está processando essa compra em nome de <b>Leandro de Oliveira Soares</b> e que não possui responsabilidade pelo conteúdo, oferta, e nem faz controle prévio do infoproduto; (ii) que li e concordo com os <b>Termos de Compra</b>, <b>Termos de Uso</b>, e <b>Política de Privacidade</b>.
+						Ao clicar em 'Pagar Agora', eu declaro que (i) estou ciente que a Kiwify está processando essa compra em nome de
+						<b>Leandro de Oliveira Soares</b> e que não possui responsabilidade pelo conteúdo, oferta, e nem faz controle prévio do infoproduto;
+						(ii) que li e concordo com os <b>Termos de Compra</b>, <b>Termos de Uso</b>, e <b>Política de Privacidade</b>.
 					</div>
-					<a href=""><b>Denunciar esse produto.</b></a>
+					<a><b>Denunciar esse produto.</b></a>
 					<span>*Parcelamento com acréscimo.</span>
-					<div className=''>
-						<span>Este site está protegido pelo Google reCAPTCHA.</span>
-						<br />
-						<a href=""><b>Política de Privacidade</b></a> e <a href=""><b>Termos de Serviço</b></a>.
+					<div>
+						<span>Este site está protegido pelo Google reCAPTCHA.</span><br />
+						<a><b>Política de Privacidade</b></a> e <a><b>Termos de Serviço</b></a>.
 					</div>
 				</article>
 			</div>
