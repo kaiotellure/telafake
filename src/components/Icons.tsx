@@ -18,7 +18,7 @@ export function BadgeCorrect() {
 }
 
 export function IconSecurity({className}: {className?: string}) {
-    return <svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" viewBox="0 0 512.005 512.005" className={cn("w-[20px] h-[20px] text-black", className)} data-tippy-directive="" tabIndex={0}><path fill="currentColor" d="M256.003,234.672c-11.76,0-21.333,9.573-21.333,21.333c0,7.792,4.409,14.329,10.667,18.053v13.947
+    return <svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" viewBox="0 0 512.005 512.005" className={cn("w-[20px] h-[20px] text-current", className)} data-tippy-directive="" tabIndex={0}><path fill="currentColor" d="M256.003,234.672c-11.76,0-21.333,9.573-21.333,21.333c0,7.792,4.409,14.329,10.667,18.053v13.947
 				c0,5.896,4.771,10.667,10.667,10.667c5.896,0,10.667-4.771,10.667-10.667v-13.947c6.258-3.724,10.667-10.262,10.667-18.053
 				C277.336,244.245,267.763,234.672,256.003,234.672z"></path> <path fill="currentColor" d="M256.003,149.339c-17.646,0-32,14.354-32,32v10.667h64v-10.667C288.003,163.693,273.648,149.339,256.003,149.339z"></path> <path fill="currentColor" d="M440.888,64.609l-181.333-64c-2.292-0.813-4.812-0.813-7.104,0l-181.333,64c-4.26,1.51-7.115,5.542-7.115,10.063v128
 				c0,165.646,24.563,226.188,187.198,308.188c1.51,0.76,3.156,1.146,4.802,1.146c1.646,0,3.292-0.385,4.802-1.146

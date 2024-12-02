@@ -42,7 +42,7 @@ export default function Tab({ options }: TabProps) {
                 />
             ))}
         </div>
-        <div className="mt-4 p-4 border rounded bg-zinc-50">
+        <div className="mt-4 p-4">
             <current.View />
         </div>
     </div>
