@@ -13,6 +13,7 @@ import {
 } from "./Icons";
 
 import type { PaymentResponse } from "mercadopago/dist/clients/payment/commonTypes";
+import type { CreatePixConfig } from "../services/mercadopago";
 
 interface CardViewProps {
   receive: (field: string, value: string) => void;
@@ -34,21 +35,31 @@ function CardView({ receive }: CardViewProps) {
           <IconSecurity className="absolute right-3 top-[50%] transform -translate-y-1/2" />
         </Input>
         <div className="flex gap-2">
-          <select defaultValue="mes" className="w-5/12 px-4 py-2 rounded border bg-white text-zinc-500">
+          <select
+            defaultValue="mes"
+            className="w-5/12 px-4 py-2 rounded border bg-white text-zinc-500"
+          >
             <option value="mes" disabled>
               Mês
             </option>
             {Array.from({ length: 12 }, (_, i) => (
-              <option key={i} value={i + 1}>{i + 1}</option>
+              <option key={i} value={i + 1}>
+                {i + 1}
+              </option>
             ))}
           </select>
 
-          <select defaultValue="ano" className="w-7/12 px-4 py-2 rounded border bg-white text-zinc-500">
+          <select
+            defaultValue="ano"
+            className="w-7/12 px-4 py-2 rounded border bg-white text-zinc-500"
+          >
             <option value="ano" disabled>
               Ano
             </option>
             {Array.from({ length: 12 }, (_, i) => (
-              <option key={i} value={currentYear + i}>{currentYear + i}</option>
+              <option key={i} value={currentYear + i}>
+                {currentYear + i}
+              </option>
             ))}
           </select>
 
@@ -63,7 +74,10 @@ function CardView({ receive }: CardViewProps) {
           </Input>
         </div>
 
-        <select defaultValue={12} className="w-full px-4 py-2 rounded border bg-white text-zinc-700">
+        <select
+          defaultValue={12}
+          className="w-full px-4 py-2 rounded border bg-white text-zinc-700"
+        >
           {Array.from({ length: 12 }, (_, i) => {
             const times = 12 - i;
 
@@ -153,7 +167,7 @@ function PixView() {
 interface CheckoutProps {
   name: string;
   image: string;
-  price: string;
+  price: number;
 }
 
 export default function Checkout({ name, image, price }: CheckoutProps) {
@@ -161,12 +175,13 @@ export default function Checkout({ name, image, price }: CheckoutProps) {
   const values = useRef<{ [id: string]: string }>({});
 
   const proceed = () => {
-	console.log("clicked", values.current);
-
     if (
-		!FORMATTERS.email.validate(values.current.email) ||
-		values.current.name.replaceAll(" ", "").length < 10
-	) return;
+      !FORMATTERS.email.validate(values.current.email) ||
+      values.current.name.replaceAll(" ", "").length < 10
+    )
+      return;
+
+    console.log("clicked and passed checks:", values.current);
 
     if (values.current.tab == "2") {
       return setScreen("pix");
@@ -177,18 +192,9 @@ export default function Checkout({ name, image, price }: CheckoutProps) {
     values.current[field] = value;
   };
 
-  if (screen == "pix") {
-    return (
-      <PixScreen
-        name={name}
-        image={image}
-        price={price}
-        infos={values.current}
-      />
-    );
-  }
-
-  return (
+  return screen == "pix" ? (
+    <PixScreen name={name} image={image} price={price} infos={values.current} />
+  ) : (
     <PaymentScreen
       name={name}
       image={image}
@@ -198,14 +204,7 @@ export default function Checkout({ name, image, price }: CheckoutProps) {
   );
 }
 
-interface PixScreenProps {
-  name: string;
-  image: string;
-  price: string;
-  infos: { [id: string]: string };
-}
-
-async function createServerPIX(config: any) {
+async function createServerPIX(config: CreatePixConfig) {
   const response = await fetch("/api/pix", {
     method: "POST",
     headers: {
@@ -215,6 +214,13 @@ async function createServerPIX(config: any) {
   });
 
   return response.json();
+}
+
+interface PixScreenProps {
+  name: string;
+  image: string;
+  price: number;
+  infos: { [id: string]: string };
 }
 
 function PixScreen({ name, image, price, infos }: PixScreenProps) {
@@ -234,8 +240,6 @@ function PixScreen({ name, image, price, infos }: PixScreenProps) {
       }
     );
   }, []);
-
-  console.log(pixPayment);
 
   return (
     <div className="flex flex-col gap-8 w-[700px] font-opensans">
@@ -329,14 +333,22 @@ function PaymentScreen({ name, image, receive, proceed }: PaymentScreenProps) {
           report={receive}
           id="name"
           name="Nome completo"
+          initialValue="Cleber Mendes"
           formatter="empty"
         />
 
-        <Input report={receive} id="email" name="Email" formatter="email" />
+        <Input
+          report={receive}
+          id="email"
+          initialValue="test@gmail.com"
+          name="Email"
+          formatter="email"
+        />
         <Input
           report={receive}
           id="confirm_email"
           name="Confirmar email"
+          initialValue="test@gmail.com"
           formatter="email"
         />
 

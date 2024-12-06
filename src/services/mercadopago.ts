@@ -1,10 +1,14 @@
 import { MercadoPagoConfig, Payment } from "mercadopago";
 import { logToWebhook } from "./discordwebhook";
 
-import pix_testdata from "../assets/pix-gerado.json";
 import type { PaymentResponse } from "mercadopago/dist/clients/payment/commonTypes";
+import pix_testdata from "../assets/pix-gerado.json";
 
-interface Paydata { id: number; name: string, email: string };
+interface Paydata {
+  id: number;
+  name: string;
+  email: string;
+}
 var PAYMENTS_POOL: Paydata[] = [];
 
 const client = new MercadoPagoConfig({
@@ -34,15 +38,21 @@ export async function createPIX(config: CreatePixConfig) {
     idempotencyKey: config.email + "-pix-creation",
   };
 
-  const payres = import.meta.env.DEV
-    ? pix_testdata
-    : await payment.create({ body, requestOptions });
+  var payres: PaymentResponse;
+
+  if (import.meta.env.DEV) {
+    console.log("using test data payment for pix.");
+    payres = pix_testdata as unknown as PaymentResponse;
+  } else {
+    console.log("creating a new pix payment into MP API.");
+    payres = await payment.create({ body, requestOptions });
+  }
 
   payres.id &&
     PAYMENTS_POOL.push({
       id: payres.id,
       email: config.email,
-      name: config.name
+      name: config.name,
     });
 
   return payres;
@@ -51,7 +61,7 @@ export async function createPIX(config: CreatePixConfig) {
 function onPaymentFinished(paydata: Paydata, payment: PaymentResponse) {
   PAYMENTS_POOL = PAYMENTS_POOL.filter((x) => x.id != payment.id);
   logToWebhook(
-    import.meta.env.SECRET_PIX_WEBHOOK,
+    import.meta.env.SECRET_PIX_WEBHOOK + "aaa",
     "Novo pagamento PIX concluído!",
     [
       {
