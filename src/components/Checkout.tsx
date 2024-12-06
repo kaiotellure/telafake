@@ -34,21 +34,21 @@ function CardView({ receive }: CardViewProps) {
           <IconSecurity className="absolute right-3 top-[50%] transform -translate-y-1/2" />
         </Input>
         <div className="flex gap-2">
-          <select className="w-5/12 px-4 py-2 rounded border bg-white text-zinc-500">
-            <option value="" disabled selected>
+          <select defaultValue="mes" className="w-5/12 px-4 py-2 rounded border bg-white text-zinc-500">
+            <option value="mes" disabled>
               Mês
             </option>
             {Array.from({ length: 12 }, (_, i) => (
-              <option value={i + 1}>{i + 1}</option>
+              <option key={i} value={i + 1}>{i + 1}</option>
             ))}
           </select>
 
-          <select className="w-7/12 px-4 py-2 rounded border bg-white text-zinc-500">
-            <option value="" disabled selected>
+          <select defaultValue="ano" className="w-7/12 px-4 py-2 rounded border bg-white text-zinc-500">
+            <option value="ano" disabled>
               Ano
             </option>
             {Array.from({ length: 12 }, (_, i) => (
-              <option value={currentYear + i}>{currentYear + i}</option>
+              <option key={i} value={currentYear + i}>{currentYear + i}</option>
             ))}
           </select>
 
@@ -63,20 +63,20 @@ function CardView({ receive }: CardViewProps) {
           </Input>
         </div>
 
-        <select className="w-full px-4 py-2 rounded border bg-white text-zinc-700">
+        <select defaultValue={12} className="w-full px-4 py-2 rounded border bg-white text-zinc-700">
           {Array.from({ length: 12 }, (_, i) => {
             const times = 12 - i;
 
             if (times == 1) {
               return (
-                <option value={times}>
+                <option key={times} value={times}>
                   R$ {(97).toFixed(2).replace(".", ",")}
                 </option>
               );
             }
 
             return (
-              <option selected={times == 12} value={times}>
+              <option key={times} value={times}>
                 {times}x de R${" "}
                 {price(97, 2.9956 / 100, times)
                   .toFixed(2)
@@ -89,7 +89,7 @@ function CardView({ receive }: CardViewProps) {
 
       <div className="mt-2 p-2 flex flex-col gap-4">
         <div className="flex gap-2 items-center mx-[2.5px]">
-          <input checked type="checkbox" />
+          <input checked readOnly type="checkbox" />
           <span className="text-sm">Salvar dados para as próximas compras</span>
         </div>
         <div className="flex gap-2 items-center text-gray-500">
@@ -161,6 +161,8 @@ export default function Checkout({ name, image, price }: CheckoutProps) {
   const values = useRef<{ [id: string]: string }>({});
 
   const proceed = () => {
+	console.log("clicked", values.current);
+
     if (
 		!FORMATTERS.email.validate(values.current.email) ||
 		values.current.name.replaceAll(" ", "").length < 10
@@ -222,7 +224,7 @@ function PixScreen({ name, image, price, infos }: PixScreenProps) {
   }>({});
 
   useEffect(() => {
-    createServerPIX({ price, email: infos.email }).then(
+    createServerPIX({ price, name: infos.name, email: infos.email }).then(
       (response: PaymentResponse) => {
         setPixPayment({
           code: response.point_of_interaction?.transaction_data?.qr_code,
@@ -232,6 +234,8 @@ function PixScreen({ name, image, price, infos }: PixScreenProps) {
       }
     );
   }, []);
+
+  console.log(pixPayment);
 
   return (
     <div className="flex flex-col gap-8 w-[700px] font-opensans">

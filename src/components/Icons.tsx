@@ -73,16 +73,16 @@ export function BadgeCorrect() {
       xmlns="http://www.w3.org/2000/svg"
       className="w-4 h-4 absolute text-green-500 -top-1 -right-2"
     >
-      <g fill="none" fill-rule="evenodd">
+      <g fill="none" fillRule="evenodd">
         <path
           d="M16 8c0 4.418-3.582 8-8 8s-8-3.582-8-8 3.582-8 8-8 8 3.582 8 8z"
           fill="currentColor"
         ></path>{" "}
         <path
           stroke="#FFF"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
           d="M11.092 6L7.003 9.914 5 7.911"
         ></path>
       </g>

@@ -37,7 +37,7 @@ export default function Tab({ options, selected, setSelected, report }: TabProps
     return <div className="w-full">
         <div className="flex gap-2">
             {options.map((option, i) => (
-                <TabOption {...option}
+                <TabOption key={option.name} {...option}
                     onClick={() => {setSelected(i); report("tab", i.toString())}}
                     selected={selected == i}
                 />

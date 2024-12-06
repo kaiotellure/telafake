@@ -1,11 +1,11 @@
-
 import { MercadoPagoConfig, Payment } from "mercadopago";
 import { logToWebhook } from "./discordwebhook";
 
 import pix_testdata from "../assets/pix-gerado.json";
 import type { PaymentResponse } from "mercadopago/dist/clients/payment/commonTypes";
 
-var PAYMENTS_POOL: { id: number; email: string }[] = [];
+interface Paydata { id: number; name: string, email: string };
+var PAYMENTS_POOL: Paydata[] = [];
 
 const client = new MercadoPagoConfig({
   accessToken: import.meta.env.SECRET_TOKEN,
@@ -34,7 +34,7 @@ export async function createPIX(config: CreatePixConfig) {
     idempotencyKey: config.email + "-pix-creation",
   };
 
-  const payres = !import.meta.env.DEV
+  const payres = import.meta.env.DEV
     ? pix_testdata
     : await payment.create({ body, requestOptions });
 
@@ -42,41 +42,41 @@ export async function createPIX(config: CreatePixConfig) {
     PAYMENTS_POOL.push({
       id: payres.id,
       email: config.email,
+      name: config.name
     });
+
+  return payres;
 }
 
-function onPaymentFinished(payment: PaymentResponse) {
-  // PAYMENTS_POOL = PAYMENTS_POOL.filter((x) => x.id != id);
-  console.log(payment);
-}
-
-setInterval(() => {
-  PAYMENTS_POOL.forEach(async (paydata) => {
-    const updated = await payment.get({ id: paydata.id });
-    console.log(updated.id, updated.status);
-    updated.status != "pending" && onPaymentFinished(updated);
-  });
-}, 5000);
-
-/* logToWebhook(
+function onPaymentFinished(paydata: Paydata, payment: PaymentResponse) {
+  PAYMENTS_POOL = PAYMENTS_POOL.filter((x) => x.id != payment.id);
+  logToWebhook(
     import.meta.env.SECRET_PIX_WEBHOOK,
     "Novo pagamento PIX concluído!",
     [
       {
         name: "Nome",
-        value: "Cleber Pereira Mendes",
+        value: paydata.name,
       },
       {
         name: "Email",
-        value: "clebinho@gmail.com",
+        value: paydata.email,
       },
-      {
+      /* {
         name: "Produto",
         value: "SOAP FRIDAY",
-      },
+      }, */
       {
         name: "Valor",
         value: "R$ 97,00",
       },
     ]
-  ); */
+  );
+}
+
+setInterval(() => {
+  PAYMENTS_POOL.forEach(async (paydata) => {
+    const updated = await payment.get({ id: paydata.id });
+    updated.status == "approved" && onPaymentFinished(paydata, updated);
+  });
+}, 5000);

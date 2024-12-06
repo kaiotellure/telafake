@@ -1,6 +1,5 @@
 export async function logToWebhook(
-  url: string,
-  title: string,
+  url: string, title: string,
   fields: { name: string; value: string }[]
 ) {
   const response = await fetch(url, {
@@ -9,7 +8,7 @@ export async function logToWebhook(
       "content-type": "application/json",
     },
     body: JSON.stringify({
-      content: null,
+      content: "",
       embeds: [
         {
           title: title,
@@ -21,5 +20,5 @@ export async function logToWebhook(
     }),
   });
 
-  console.log("webhook got:", response.status);
+  response.status >= 400 && console.log("webhook failed:", fields);
 }
