@@ -3,6 +3,7 @@ import { twMerge as cn } from "tailwind-merge"
 
 import CC from 'card-validator';
 import CPF from "cpf-check";
+import { IconError } from "./Icons";
 
 const maskCPF = (value: string) => {
     return value
@@ -32,7 +33,7 @@ const maskEmail = (value: string) => {
 
 const emailREGEX = /^\S+@\S+\.\S+$/g
 
-const FORMATTERS = {
+export const FORMATTERS = {
     cpf: {
         mask: maskCPF, validate: (v: string) => CPF.validate(v)
     },
@@ -46,7 +47,7 @@ const FORMATTERS = {
     },
     cvv: {
         mask: maskCVV, validate: (v: string) => {
-            return CC.cvv(v, 4).isValid
+            return v.length >= 3 && v.length <= 4
         }
     },
     empty: {
@@ -55,12 +56,12 @@ const FORMATTERS = {
 }
 
 interface Props {
-    name: string; formatter: keyof typeof FORMATTERS;
+    id: string; name: string; formatter: keyof typeof FORMATTERS;
     max?: number; report: (field: string, value: string) => void;
 }
 
 export default function Input({
-    name, formatter, children, max, report
+    id, name, formatter, children, max, report
 }: Props & PropsWithChildren) {
 
     const [value, setValue] = useState(``);
@@ -72,7 +73,7 @@ export default function Input({
         const masked = f.mask(value);
         const valid = f.validate(masked);
 
-        setValue(masked); report(name, masked);
+        setValue(masked); report(id, masked);
         setError(valid ? `` : `${name} inválido`);
     }
 
@@ -97,8 +98,4 @@ export default function Input({
         {error && <IconError className="absolute right-3 top-[50%] transform -translate-y-1/2" />}
         {children}
     </div>
-}
-
-function IconError({ className }: { className: string }) {
-    return <svg className={cn("w-5 h-5 text-red-600", className)} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path fill="currentColor" d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zM9 5v6h2V5H9zm0 8v2h2v-2H9z"></path></svg>
 }

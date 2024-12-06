@@ -1,0 +1,174 @@
+{
+  "id": 95516953278,
+  "date_created": "2024-12-06T15:12:42.154-04:00",
+  "date_approved": null,
+  "date_last_updated": "2024-12-06T15:12:42.154-04:00",
+  "date_of_expiration": "2024-12-07T15:12:41.866-04:00",
+  "money_release_date": null,
+  "money_release_status": "released",
+  "operation_type": "regular_payment",
+  "issuer_id": "12501",
+  "payment_method_id": "pix",
+  "payment_type_id": "bank_transfer",
+  "payment_method": {
+    "id": "pix",
+    "type": "bank_transfer",
+    "issuer_id": "12501"
+  },
+  "status": "pending",
+  "status_detail": "pending_waiting_transfer",
+  "currency_id": "BRL",
+  "description": "<DESCRIPTION>",
+  "live_mode": true,
+  "sponsor_id": null,
+  "authorization_code": null,
+  "money_release_schema": null,
+  "taxes_amount": 0,
+  "counter_currency": null,
+  "brand_id": null,
+  "shipping_amount": 0,
+  "build_version": "3.81.0-rc-1",
+  "pos_id": null,
+  "store_id": null,
+  "integrator_id": null,
+  "platform_id": null,
+  "corporation_id": null,
+  "charges_execution_info": {
+    "internal_execution": {
+      "date": "2024-12-06T15:12:42.131-04:00",
+      "execution_id": "01JEEP6Y22YAM5EKEP03Z3G9T1"
+    }
+  },
+  "payer": {
+    "type": null,
+    "id": "1504520350",
+    "operator_id": null,
+    "email": null,
+    "identification": { "number": null, "type": null },
+    "phone": { "number": null, "extension": null, "area_code": null },
+    "first_name": null,
+    "last_name": null,
+    "entity_type": null
+  },
+  "collector_id": 1684042542,
+  "marketplace_owner": null,
+  "metadata": {},
+  "additional_info": {},
+  "order": {},
+  "external_reference": null,
+  "transaction_amount": 97,
+  "transaction_amount_refunded": 0,
+  "coupon_amount": 0,
+  "differential_pricing_id": null,
+  "financing_group": null,
+  "deduction_schema": null,
+  "callback_url": null,
+  "installments": 1,
+  "transaction_details": {
+    "payment_method_reference_id": null,
+    "acquirer_reference": null,
+    "net_received_amount": 0,
+    "total_paid_amount": 97,
+    "overpaid_amount": 0,
+    "external_resource_url": null,
+    "installment_amount": 0,
+    "financial_institution": null,
+    "payable_deferral_period": null,
+    "bank_transfer_id": null,
+    "transaction_id": null
+  },
+  "fee_details": [],
+  "charges_details": [
+    {
+      "id": "95516953278-001",
+      "name": "mercadopago_fee",
+      "type": "fee",
+      "accounts": { "from": "collector", "to": "mp" },
+      "client_id": 0,
+      "date_created": "2024-12-06T15:12:42.157-04:00",
+      "last_updated": "2024-12-06T15:12:42.157-04:00",
+      "amounts": { "original": 0.96, "refunded": 0 },
+      "metadata": { "source": "rule-engine" },
+      "reserve_id": null,
+      "refund_charges": []
+    }
+  ],
+  "captured": true,
+  "binary_mode": false,
+  "call_for_authorize_id": null,
+  "statement_descriptor": null,
+  "card": {},
+  "notification_url": null,
+  "refunds": [],
+  "processing_mode": "aggregator",
+  "merchant_account_id": null,
+  "merchant_number": null,
+  "acquirer_reconciliation": [],
+  "point_of_interaction": {
+    "type": "OPENPLATFORM",
+    "business_info": {
+      "unit": "online_payments",
+      "sub_unit": "sdk",
+      "branch": null
+    },
+    "location": { "state_id": null, "source": null },
+    "application_data": { "name": null, "version": null },
+    "transaction_data": {
+      "qr_code": "00020126440014br.gov.bcb.pix0122mariahairliz@gmail.com520400005303986540597.005802BR5918OLLE202402142327046009Sao Paulo62240520mpqrinter955169532786304FF7C",
+      "bank_transfer_id": null,
+      "transaction_id": null,
+      "e2e_id": null,
+      "financial_institution": null,
+      "ticket_url": "https://www.mercadopago.com.br/payments/95516953278/ticket?caller_id=1504520350&hash=0faefe11-5025-4e42-8ed6-b60b6fd16ab6",
+      "bank_info": {
+        "payer": {
+          "account_id": null,
+          "branch": null,
+          "id": null,
+          "long_name": null,
+          "identification": {},
+          "external_account_id": null
+        },
+        "collector": {
+          "account_id": null,
+          "long_name": null,
+          "account_holder_name": "Leandro de Oliveira Soares",
+          "transfer_account_id": null
+        },
+        "is_same_bank_account_owner": null,
+        "origin_bank_id": null,
+        "origin_wallet_id": null
+      },
+      "qr_code_base64": "iVBORw0KGgoAAAANSUhEUgAABWQAAAVkAQAAAAB79iscAAANaElEQVR4Xu3XW5LkOK5FUc2g5z/LmoFfKxxAAAEqy65ZsMNVvc+HJx8AuBR/eX1elL+ufvLNQXsuaM8F7bmgPRe054L2XNCeC9pzQXsuaM8F7bmgPRe054L2XNCeC9pzQXsuaM8F7bmgPRe054L2XNCeC9pzQXsuaM8F7bmgPRe054L2XNCeC9pzQXsuaM8F7bmgPRe054L2XNCeS9VePf/xs1ryn9zsb/3sLx9gq11J9mZdu/Xkk2jtDC1anaFFqzO0aHWGFq3O0KLVGdpXaxsltv807rqfzSTU2uZZ7WjjHxhoPWjRKmjRKmjRKmjRKmjRKmjfrs3+OuTy6Y3sbdkxE8O9t3bYbfsTxLttew+4lw9laMst2gut3aK90Not2gut3aK90Not2gut3aK9XqTNkpr4jPpEm5519cXYJnT3s0y+e+/lQxlatGjRop1btGjRokWLdm7Rvklrm7z1VZTUtnYb8VP75oVXz5biHeOeci+3ZW2Ir6KktqFFi9YP0KJV0KJV0KJV0KJV0P6etm3rrJ12eWy42wddldcudm1ji3Y+i3ZX5pPauNyi3TA8aOezaHdlPqmNyy3aDcODdj6Ldlfmk9q43KLdMDxo57Nod2U+qY3L7W9qW+Lt//bPZKD9qZ/JQPtTP5OB9qd+JgPtT/1MBtqf+pkMtD/1Mxlof+pnMtD+1M9koP2pn8l4vXafv+7/+sU430bqrSWm51lOa3Xt9p+CFq2CFq2CFq2CFq2CFq2CFq3yZu2i8ElxZgV55tv8gkj2epaPzE/z4rjN4l2JB20LWt/1oNWZF6O11QctWlt90KK11QctWlt90KK11eertLW1VpQhbbtbZZv9O7RxlnX77fJXum9zjRatghatghatghatghatghat8jatXUaZZ/dOzLSCMXiiYpYX58/43CzObf2We9nfrl1o0aJFW7vQokWLtnahRYsWbe36Qu19NGsTsLw46pbks7uPbJPrNz98BtqMv442s1OgRYs2L9CijV60aNGizQu0X6qNBk+8Y5s2pBYnILdLW0UtqXW2jVUr8aCdbWjRos3dkvksWrRo0aKNoPUhaNFqyHdp//BOPNZk+QV1ZmS8nR+5fHP7lhy1GZBrtGgVtGgVtGgVtGgVtGgVtGiVt2knYKeoJdlhaZ8bxQOaU6yuXXzuv0gToEWroEWroEWroEWroEWroEWrvFfbBueZz1zStO3FfKzextm9Xl6LAc2IFm15yIPWbi1oM2jRxg4tWu3QotUOLVrtXqf9rOMi9e3M7ltyyvJ21rVRf7hY3Gh3j6FFizZ3aNFqhxatdmjRaocWrXZv0n7WwUaptSX1LDraylIBWfyP+FbiQRsrC9oMWtWhRas6tGhVhxat6tCiVR3aF2nbzEySP+uQBdBKdp+RqFoXSUH929S/V7ai7Su0aNGirSu0aNGirSu0aNG+Sfup/Tk4PXnraYr2RGx99kNJqxuvoX2g+K3loQQt2n62fw3tA8VvLQ8laNH2s/1raB8ofmt5KEGLtp/tX0P7QPFby0MJ2m/TjoalNm/ri3Zm2zpzOWuUSJbkT2u7J0bQolXQolXQolXQolXQolXQolXeq72PlnGZ+QVNVusa4Bp1tTdiI/cPWdCiVdCiVdCiVdCiVdCiVdCiVd6rbYqafDZK2lmW1ttI/YIoyYua9oalqu4l2lqM9j5fgva+qEGbxWjRoh1vWNBG6m0ELdpSjPY+X4L2vqj5/2jjcvdYrhKaP5ViZ5b4Zt/mgHioJtr8dmnzoEWroEWroEWroEWroEWroEWrvFeb02tS9rk9tgp3no2SGNCm1Cwf1P5UbTLaWhID0KLVALRoNQAtWg1Ai1YD0KLVALTv0npfxKfnOFvtjPmRcZEvtgx8fkH+RZbbOgptrHZBa0GLVkGLVkGLVkGLVkGLVvl6bZQNT95alsGDl7czlWclbcCCH9+MFm2c5RptD1q0Clq0Clq0Clq0CtrXaH1mnsW2fktMH9/Xpn8285a63fgo9ax/h3Y+ps9xHrRoFbRoFbRoFbRoFbRoFbRolV/XZmvLRNWfLGm9s+6xpP4dMsunoS1dm7rHErQDgLYEbZa03ln3WIJ2ANCWoM2S1jvrHkvQDgDaErRZ0npn3WMJ2gH4Pe19pDJLNtqFn2V/bpdvyYs2YPcFrcNXcYEWbSn2oEWroEWroEWroEWroEWrvF77WceNhnDb29e6nW1etNTVXnvNsmsbj9/LktGKVmf2mmXXNh6/lyWjFa3O7DXLrm08fi9LRitandlrll3bePxeloxWtDqz1yy7tvH4vSwZrWh1Zq9Zdm3j8XtZMlrR6sxes+zaxuP3smS0otWZvWbZtY3H72XJaEWrM3vNsmsbj9/LktGKVmf2mmXXNh6/lyWj9Vu1rcJn2hN5m5PydiG3Yj+Is1q34FtvvutBi1ZBi1ZBi1ZBi1ZBi1ZBi1Z5r7ZO2iU/Y/dEO8uLZfKfty311oI2gzby2OVBu25b6q0FbQZt5LHLg3bdttRbC9oM2shjlwftum2ptxa0GbSRxy7Pt2mjor3tq0XribP7oM/zZNvSkcWJr++2oF3medBmBVq0cY7WV2jRaoUWrVZo0WqF9su1oyEHtx+LAbJtflD9qkh941NH1aI/PJStaHvQolXQolXQolXQolXQolXQvkG7A7TpTdEuckB1L7fetgzYvVvr0KJFe1+gVdt9ey+3XWj7gN27tQ4tWrT3BVq13bf3ctuFtg/YvVvr0KL9k7bJ8sXxrCXPIq0jeZbdh/tF2+antTfQoo2SdYfWgzY3aPtrftG2aNHedeNdL1l3aD1oc4O2v+YXbYsW7V033vWSdacyHxzTfcwjOYsfPndXsqGUjG/xknV3jekftHFbgzbr8mxSLGjX3TWmf9DGbQ3arMuzSbGgXXfXmP5BG7c1aLMuzybFgnbdXWP6B23c1qDNujybFMtZrU+35Gpp8G1Oam9Pst8uo7I4p7SMyRa0aBW0aBW0aBW0aBW0aBW0aJV/g3a8aOPstr0TybZMu8itJ19rWR5Hm22ZdpFbD1oLWrQKWrQKWrQKWrQKWrTKV2tT1sbttrv4i/GTH+ltCchtfunyLtoWtFZyL9Gi9aBFq6BFq6BFq6BFq7xNG+/UVa0txZb2fXnWpgx8XmTaV+VPLcl1DqkrtOUig3YJWq3QotUKLVqt0KLVCi1ardD+praNc8quP0uuJ8CfV5E6xwbEma9SYEGbox5XkTrHBsSZr9Ci1QotWq3QotUKLVqt0KLVCu2vaL3M3q4VRZElWVfPdlk+Lb9+/DE+FeoZlrzy2lGB1ldoxzi0f8cKSuu05JXXjgq0vkI7xqH9O1ZQWqclr7x2VKD1FdoxDu3fsYLSOi155bWjAq2v0I5x36HN1j9T2m07S0/cjoulxOuWjgH1s1yjRaugRaugRaugRaugRaugRau8SztQkd30AbiqLEe1jqbNkrG1jL/SukNbO9C2oO0lY2tBi1ZBi1ZBi1ZBi1ZB+yvanDl+lviQaWwev18u8jVLHWCr5S/iF9ZrQYtWQYtWQYtWQYtWQYtWQYtWebM2B/vl1c5ySKYOtlWgxkWsMu0L2keO70OLVkGLVkGLVkGLVkGLVkGLVnm9NjPdWVdjtzPjtg3IP4YVLx+ZHSvjXqJdb9EutXdZ2aJFW+pq0N4daHcZt2iX2rusbNGiLXU1aO8OtLuM2/9hbeax37f5RGxr3W5rox54nnwtO1rQ7rZoI22cP2tntkWLVlu0aLVFi1ZbtGi1RYtW26/R+hORfKf1D7LFzpaLvXGRee+S1ntv76UyutCiVRdatOpCi1ZdaNGqCy1adaFFq65v1XphvFhrlxfHbfT6Wazqha3y2aWjnrZPszq0F1qrQ3uhtTq0F1qrQ3uhtTq0F1qrQ3uhtbp/kXZXFkmoH7RVaOuoxy9ostbbHvI3cp2VvkWrKXmBNjKGoFXQolXQolXQolXQolXQ/p52l+yup7t3bBs/3ptny4Bsy966ypIWtGgVtGgVtGgVtGgVtGgVtGiV92qtoibeyW0tbjx7e160Kc1YL1rvcuZBi1ZBi1ZBi1ZBi1ZBi1ZBi1Z5s/bRY5mAWjynt8/IM5+3DMgv8Lp2a0GLVkGLVkGLVkGLVkGLVkGLVnm51sdMqI/L27yI3loSt/nj7obPupb5BtoatNmKFq1a0aJVK1q0akWLVq1o0ar1/dr0LENq27L1s2VA/ZaGz8zP8BXaJWg/aP0MLVqdoUWrM7RodYYWrc7Q/hu13hqP+WDbxszcepbePNuj8jMifpufZkFrQYtWQYtWQYtWQYtWQYtWQft2bdt688NqvLP7lsmrF3mboybDgxatghatghatghatghatghat8mZty4Onbq/xrJ/lvKUj52Vym735uWjRRtCivQfcZ/cS7ehAW8vQokWLtpahRfvd2u8P2nNBey5ozwXtuaA9F7TngvZc0J4L2nNBey5ozwXtuaA9F7TngvZc0J4L2nNBey5ozwXtuaA9F7TngvZc0J4L2nNBey5ozwXtuaA9F7TngvZc0J4L2nNBey5ozwXtuaA9F7TngvZcXqb9P12uhCFF2tv/AAAAAElFTkSuQmCC"
+    }
+  },
+  "accounts_info": null,
+  "release_info": null,
+  "tags": null,
+  "api_response": {
+    "status": 201,
+    "headers": {
+      "date": ["Fri, 06 Dec 2024 19:12:42 GMT"],
+      "content-type": ["application/json;charset=UTF-8"],
+      "transfer-encoding": ["chunked"],
+      "connection": ["keep-alive"],
+      "x-site-id": ["MLB"],
+      "x-response-status": ["pending/pending_waiting_transfer"],
+      "x-caller-id": ["1684042542"],
+      "vary": ["Accept,Accept-Encoding"],
+      "cache-control": ["max-age=0"],
+      "etag": ["021047f17b5abb6176ac2f972c78d605"],
+      "x-content-type-options": ["nosniff"],
+      "x-request-id": ["c3278fae-08e4-4940-9496-ee33d433b798"],
+      "x-xss-protection": ["1; mode=block"],
+      "strict-transport-security": [
+        "max-age=16070400; includeSubDomains; preload"
+      ],
+      "access-control-allow-origin": ["*"],
+      "access-control-allow-headers": ["Content-Type"],
+      "access-control-allow-methods": ["PUT, GET, POST, DELETE, OPTIONS"],
+      "access-control-max-age": ["86400"],
+      "timing-allow-origin": ["*"]
+    }
+  }
+}
