@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { cn } from "./utils";
 import { IconError } from "./Icons";
 
@@ -6,6 +6,7 @@ interface NewInputProps {
   id: string;
   name: string;
   max?: number;
+  initialValue?: string;
 
   report: (field: string, value: string) => void;
   mask?: (value: string) => string;
@@ -25,8 +26,16 @@ export default function NewInput(props: NewInputProps) {
   const [focused, setFocused] = useState(false);
   const [hoveringBadge, setHoveringBadge] = useState(false);
 
-  const [inputValue, setInputValue] = useState("");
+  const initial = props.initialValue || "";
+  const [inputValue, setInputValue] = useState(
+    props.mask ? props.mask(initial) : initial
+  );
+
+  // todo: select value isn't being propagated or even being read.
   const [selectValue, setSelectValue] = useState("");
+
+  // report the initial maskared value for up-tree receivers
+  useEffect(() => props.report(props.id, inputValue), []);
 
   const shouldHang =
     /* the label should stay lifted when:
@@ -42,11 +51,17 @@ export default function NewInput(props: NewInputProps) {
 
   const empty = inputValue.length == 0;
 
+  function updateInputValue(raw: string) {
+    const masked = props.mask ? props.mask(raw) : raw;
+    props.report(props.id, masked);
+    setInputValue(masked);
+  }
+
   return (
     <div
       className={cn(
-        "cursor-text rounded border w-full h-fit px-2 py-1 flex items-center",
-        focused ? "border-blue-500" : (valid || empty ? "" : "border-red-500")
+        "bg-white cursor-text rounded border w-full h-fit px-2 py-1 flex items-center",
+        focused ? "border-blue-500" : valid || empty ? "" : "border-red-500"
       )}
     >
       <div
@@ -59,7 +74,11 @@ export default function NewInput(props: NewInputProps) {
           className={cn(
             "absolute leading-none duration-200 pointer-events-none",
             shouldHang ? "top-0 left-0 text-xs" : `top-1/2 -translate-y-1/2`,
-            focused ? "text-blue-500" : (valid || empty ? "text-zinc-500" : "text-red-500")
+            focused
+              ? "text-blue-500"
+              : valid || empty
+                ? "text-zinc-500"
+                : "text-red-500"
           )}
           style={shouldHang ? {} : { left: (select?.offsetWidth || 0) + 8 }}
         >
@@ -87,12 +106,8 @@ export default function NewInput(props: NewInputProps) {
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
             value={inputValue}
-            onChange={(e) =>
-              setInputValue(
-                props.mask ? props.mask(e.target.value) : e.target.value
-              )
-            }
-            className="w-full h-full outline-none text-gray-800"
+            onChange={(e) => updateInputValue(e.target.value)}
+            className="w-full h-full outline-none bg-transparent text-gray-800"
           />
         </div>
       </div>
@@ -101,14 +116,18 @@ export default function NewInput(props: NewInputProps) {
       <div
         onMouseEnter={() => setHoveringBadge(true)}
         onMouseLeave={() => setHoveringBadge(false)}
+        onTouchStart={() => setHoveringBadge(true)}
+        onTouchEnd={() => setHoveringBadge(false)}
         className="cursor-default relative h-fit flex justify-center items-center"
       >
         {props.badgeTooltip && hoveringBadge && (
-          <div className="text-center w-max max-w-60 text-sm -top-2 -translate-y-full px-2 py-1 text-white bg-zinc-800 rounded-md absolute">
+          <div className="text-center w-max max-w-60 text-sm right-0 -top-2 -translate-y-full px-2 py-1 text-white bg-zinc-800 rounded-md absolute">
             {props.badgeTooltip}
           </div>
         )}
-        {props.badge ? props.badge : !valid && !focused && !empty && <IconError className="" />}
+        {props.badge
+          ? props.badge
+          : !valid && !focused && !empty && <IconError className="" />}
       </div>
     </div>
   );

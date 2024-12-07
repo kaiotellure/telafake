@@ -25,81 +25,80 @@ function CardView({ receive }: CardViewProps) {
 
   return (
     <div>
-      <div className="p-4 space-y-2 border rounded bg-zinc-50">
-        <Input
+      <div className="md:p-4 space-y-2 md:border md:rounded md:bg-zinc-50">
+        <NewInput
           report={receive}
-          id="cc_number"
+          id="card_number"
+          mask={cardNumberValidator.mask}
+          validate={cardNumberValidator.validate}
           name="Número de Cartão de Crédito"
-          max={19}
-          formatter="cc"
-        >
-          <IconSecurity className="absolute right-3 top-[50%] transform -translate-y-1/2" />
-        </Input>
-        <div className="flex gap-2">
-          <select
-            defaultValue="mes"
-            className="w-5/12 px-4 py-2 rounded border bg-white text-zinc-500"
-          >
-            <option value="mes" disabled>
-              Mês
-            </option>
-            {Array.from({ length: 12 }, (_, i) => (
-              <option key={i} value={i + 1}>
-                {i + 1}
-              </option>
-            ))}
-          </select>
+          badge={<IconSecurity />}
+          initialValue="411141114111411"
+          badgeTooltip="Nós protegemos seus dados de pagamento usando encriptação para prover segurança no nível de bancos."
+        />
 
-          <select
-            defaultValue="ano"
-            className="w-7/12 px-4 py-2 rounded border bg-white text-zinc-500"
-          >
-            <option value="ano" disabled>
-              Ano
-            </option>
-            {Array.from({ length: 12 }, (_, i) => (
-              <option key={i} value={currentYear + i}>
-                {currentYear + i}
-              </option>
-            ))}
-          </select>
+        <div className="flex flex-wrap md:flex-nowrap gap-2">
+          <div className="flex gap-2 w-full">
+            <NewSelect
+              report={receive}
+              id="card_month"
+              initialValue="03"
+              name="Mês"
+              options={Array.from({ length: 12 }, (_, i) => ({
+                name: alwaysTwo(i + 1),
+                value: alwaysTwo(i + 1),
+              }))}
+            />
 
-          <Input
+            <NewSelect
+              report={receive}
+              id="card_year"
+              name="Ano"
+              initialValue="2029"
+              options={Array.from({ length: 12 }, (_, i) => ({
+                name: currentYear + i,
+                value: currentYear + i,
+              }))}
+            />
+          </div>
+
+          <NewInput
             report={receive}
-            id="cc_cvv"
+            id="card_cvv"
+            mask={(value) => value.slice(0, 4)}
+            validate={(value) => value.length > 2}
             name="Cód. segurança"
-            formatter="cvv"
-            max={4}
-          >
-            <IconDoubt className="absolute right-3 top-[50%] transform -translate-y-1/2" />
-          </Input>
+            initialValue="4321"
+            badge={<IconDoubt />}
+            badgeTooltip="O CVV/Cód. segurança é o código de 3 ou 4 dígitos que aparece atrás do seu cartão"
+          />
         </div>
 
-        <select
-          defaultValue={12}
-          className="w-full px-4 py-2 rounded border bg-white text-zinc-700"
-        >
-          {Array.from({ length: 12 }, (_, i) => {
+        <NewSelect
+          report={receive}
+          id="installments"
+          name="Parcelas"
+          initialValue={1}
+          options={Array.from({ length: 12 }, (_, i) => {
             const times = 12 - i;
 
             if (times == 1) {
-              return (
-                <option key={times} value={times}>
-                  R$ {(97).toFixed(2).replace(".", ",")}
-                </option>
-              );
+              return {
+                name: "R$" + (97).toFixed(2).replace(".", ","),
+                value: times,
+              };
             }
 
-            return (
-              <option key={times} value={times}>
-                {times}x de R${" "}
-                {price(97, 2.9956 / 100, times)
-                  .toFixed(2)
-                  .replace(".", ",")}
-              </option>
-            );
+            const installmentPrice = price(97, 2.9956 / 100, times)
+              .toFixed(2)
+              .replace(".", ",");
+
+            return {
+              name: `${times}x de R$ ${installmentPrice}`,
+              value: times,
+            };
           })}
-        </select>
+        />
       </div>
 
       <div className="mt-2 p-2 flex flex-col gap-4">
@@ -125,8 +124,8 @@ function price(total: number, tax: number, slices: number) {
 
 function BoletoView() {
   return (
-    <div className="p-4 bg-zinc-50 rounded border">
-      <div className="p-4 bg-zinc-100 border rounded">
+    <div className="md:px-4 md:py-3 bg-zinc-50 md:rounded md:border">
+      <div className="p-4 bg-zinc-100 rounded">
         <b>Informações sobre o pagamento via boleto:</b>
         <ul className="list-disc list-inside my-4">
           <li className="leading-relaxed">
@@ -144,8 +143,8 @@ function BoletoView() {
 
 function PixView() {
   return (
-    <div className="p-4 bg-zinc-50 rounded border">
-      <div className="p-4 bg-zinc-100 rounded">
+    <div className="md:px-4 md:py-3 bg-zinc-50 md:rounded md:border">
+      <div className="bg-zinc-100 rounded p-4">
         <b>Informações sobre o pagamento via pix:</b>
         <ul className="list-disc list-inside my-4">
           <li className="leading-relaxed">
@@ -173,23 +172,42 @@ interface CheckoutProps {
 
 export default function Checkout({ name, image, price }: CheckoutProps) {
   const [screen, setScreen] = useState("checkout");
-  const values = useRef<{ [id: string]: string }>({});
+  const values = useRef<{ [id: string]: any }>({});
 
   const proceed = () => {
-    if (
-      !FORMATTERS.email.validate(values.current.email) ||
-      values.current.name.replaceAll(" ", "").length < 10
-    )
-      return;
+    function error(msg: string) {
+      console.log(msg);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
 
-    console.log("clicked and passed checks:", values.current);
+    const form = values.current;
+    console.log("[INFO] pay now requested, form values:", values.current);
+
+    if (form.name.length < 10)
+      return error("[CHECK-FAILED] full name too short.");
+
+    if (!emailValidator.validate(form.email))
+      return error("[CHECK-FAILED] email invalid.");
+
+    if (!cpfValidator.validate(form.cpf))
+      return error("[CHECK-FAILED] cpf invalid.");
+
+    if (values.current.tab == 0) {
+      if (!cardNumberValidator.validate(form.card_number))
+        return error("[CHECK-FAILED] card number invalid.");
+
+      if (form.card_cvv.length < 3)
+        return error("[CHECK-FAILED] card cvv invalid.");
+    }
+
+    console.log("[OK] pay now form checks passed.");
 
     if (values.current.tab == "2") {
       return setScreen("pix");
     }
   };
 
-  const receive = (field: string, value: string) => {
+  const receive = (field: string, value: any) => {
     values.current[field] = value;
   };
 
@@ -322,7 +340,6 @@ function PixScanningScreen({
           {/* Already made payment */}
           <a
             onClick={proceed}
-            href="javascript:"
             className="flex underline hover:no-underline relative justify-center w-full md:w-3/4 text-blue-700 font-bold p-3 text-base rounded text-center"
           >
             JÁ FIZ O PAGAMENTO
@@ -351,7 +368,13 @@ function prettyMinutes(seconds: number) {
 import Confetti from "react-confetti";
 import { cn } from "./utils";
 import NewInput from "./NewInput";
-import { cardNumberValidator, phoneValidator } from "./validators";
+import {
+  cardNumberValidator,
+  cpfValidator,
+  emailValidator,
+  phoneValidator,
+} from "./validators";
+import NewSelect from "./NewSelect";
 
 function PixConfirmingScreen({
   name,
@@ -464,10 +487,7 @@ function PixConfirmingScreen({
               <div className="text-center text-lg text-gray-700">
                 Ainda não fez o pagamento?
               </div>{" "}
-              <a
-                href="javascript:"
-                className="flex hover:no-underline relative justify-center w-full text-blue-700 underline font-bold p-3 text-base rounded text-center"
-              >
+              <a className="flex hover:no-underline relative justify-center w-full text-blue-700 underline font-bold p-3 text-base rounded text-center">
                 PAGUE AGORA COM PIX
               </a>
             </div>
@@ -495,44 +515,48 @@ function PaymentScreen({ name, image, receive, proceed }: PaymentScreenProps) {
   const [tabIndex, setTabIndex] = useState(0);
 
   return (
-    <div className="flex flex-col gap-8 w-[700px] font-opensans">
+    <div className="flex flex-col gap-8 w-[672px] font-opensans">
       {/* The product headline infos */}
       <div className="flex items-center gap-4 px-4">
         <img className="max-w-[128px] max-h-[128px] rounded" src={image} />
         <span className="text-2xl font-bold">{name}</span>
       </div>
       {/* The billing and payment infos */}
-      <div className="flex flex-col gap-4 bg-white rounded p-6 border border-zinc-300 shadow">
-        <Input
+      <div className="flex flex-col gap-3 bg-white rounded p-2 md:p-6 border border-zinc-300 shadow">
+        <NewInput
           report={receive}
           id="name"
           name="Nome completo"
-          initialValue="Cleber Mendes"
-          formatter="empty"
+          mask={(value) => value.slice(0, 125)}
+          validate={(value) => value.length > 10}
+          initialValue="Cleber Mendes del Rey"
         />
 
-        <Input
+        <NewInput
           report={receive}
           id="email"
-          initialValue="test@gmail.com"
+          initialValue="cleber.mendes.del.rey@gmail.com"
           name="Email"
-          formatter="email"
+          mask={emailValidator.mask}
+          validate={emailValidator.validate}
         />
-        <Input
+        <NewInput
           report={receive}
           id="confirm_email"
           name="Confirmar email"
-          initialValue="test@gmail.com"
-          formatter="email"
+          initialValue="cleber.mendes.del.rey@gmail.com"
+          mask={emailValidator.mask}
+          validate={emailValidator.validate}
         />
 
-        <div className="flex gap-2 mb-6">
-          <Input
+        <div className="flex flex-wrap md:flex-nowrap gap-2 mb-6">
+          <NewInput
             report={receive}
-            initialValue="22222222222"
+            initialValue="28940393791"
             id="cpf"
             name="CPF"
-            formatter="cpf"
+            mask={cpfValidator.mask}
+            validate={cpfValidator.validate}
           />
           <NewInput
             select={[
@@ -541,20 +565,12 @@ function PaymentScreen({ name, image, receive, proceed }: PaymentScreenProps) {
             ]}
             report={receive}
             id="phone"
+            initialValue="21994837873"
             mask={phoneValidator.mask}
             validate={phoneValidator.validate}
             name="Celular com DDD"
           />
         </div>
-        <NewInput
-          report={receive}
-          id="card_number"
-          mask={cardNumberValidator.mask}
-          validate={cardNumberValidator.validate}
-          name="Numero de cartao de credito"
-          badge={<IconSecurity />}
-          badgeTooltip="Nós protegemos seus dados de pagamento usando encriptação para prover segurança no nível de bancos."
-        />
 
         <Tab
           report={receive}

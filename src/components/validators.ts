@@ -1,4 +1,5 @@
 import CC from "card-validator";
+import CPF from "cpf-check";
 
 export const phoneValidator = {
   mask(value: string) {
@@ -26,5 +27,32 @@ export const cardNumberValidator = {
     // not 19 because AMEX cards have 1 digit less.
     // return value.length >= 18;
     return CC.number(value).isValid;
+  },
+};
+
+export const cpfValidator = {
+  mask(value: string) {
+    return value
+      .replace(/\D/g, "") // 1. remove all non digit characters
+      .replace(/(\d{3})(\d)/, "$1.$2") // 2. separate 3 digits
+      .replace(/(\d{3})(\d)/, "$1.$2") // 3. separate 3 digits
+      .replace(/(\d{3})(\d)/, "$1-$2") // 4. separate 3 digits
+      .replace(/(.{14})(.)/, "$1"); // 5. limit to 14 characters
+  },
+  validate(value: string) {
+    // not 19 because AMEX cards have 1 digit less.
+    // return value.length >= 18;
+    return CPF.validate(value);
+  },
+};
+
+export const emailValidator = {
+  mask(value: string) {
+    return value.slice(0, 75);
+  },
+  validate(value: string) {
+    // not 19 because AMEX cards have 1 digit less.
+    // return value.length >= 18;
+    return new RegExp(/[a-zA-Z0-9._]+@.{5,7}\..{3}/g).test(value);
   },
 };
