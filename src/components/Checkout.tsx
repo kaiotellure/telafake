@@ -17,10 +17,11 @@ import type { PaymentResponse } from "mercadopago/dist/clients/payment/commonTyp
 import type { CreatePixConfig, Paydata } from "../services/mercadopago";
 
 interface CardViewProps {
+  product: Product;
   receive: (field: string, value: string) => void;
 }
 
-function CardView({ receive }: CardViewProps) {
+function CardView({ receive, product }: CardViewProps) {
   const currentYear = new Date().getFullYear();
 
   return (
@@ -65,7 +66,7 @@ function CardView({ receive }: CardViewProps) {
           <NewInput
             report={receive}
             id="card_cvv"
-            mask={(value) => value.slice(0, 4)}
+            mask={(value) => value.slice(0, 4).replace(/\D/g, "")}
             validate={(value) => value.length > 2}
             name="Cód. segurança"
             initialValue="4321"
@@ -84,12 +85,12 @@ function CardView({ receive }: CardViewProps) {
 
             if (times == 1) {
               return {
-                name: "R$" + (97).toFixed(2).replace(".", ","),
+                name: "R$" + product.price.toFixed(2).replace(".", ","),
                 value: times,
               };
             }
 
-            const installmentPrice = price(97, 2.9956 / 100, times)
+            const installmentPrice = price(product.price, 2.9956 / 100, times)
               .toFixed(2)
               .replace(".", ",");
 
@@ -122,14 +123,18 @@ function price(total: number, tax: number, slices: number) {
   return (total * tax) / (1 - (1 + tax) ** -slices);
 }
 
-function BoletoView() {
+function money(value: number) {
+  return "R$ " + value.toFixed(2).toString().replaceAll(".", ",");
+}
+
+function BoletoView({ product }: { product: Product }) {
   return (
     <div className="md:px-4 md:py-3 bg-zinc-50 md:rounded md:border">
       <div className="p-4 bg-zinc-100 rounded">
         <b>Informações sobre o pagamento via boleto:</b>
         <ul className="list-disc list-inside my-4">
           <li className="leading-relaxed">
-            Valor à vista: <b>R$ 97,00</b>.
+            Valor à vista: <b>{money(product.price)}</b>.
           </li>
           <li className="leading-relaxed">Não podemos parcelar Boleto.</li>
           <li className="leading-relaxed">
@@ -141,14 +146,14 @@ function BoletoView() {
   );
 }
 
-function PixView() {
+function PixView({ product }: { product: Product }) {
   return (
     <div className="md:px-4 md:py-3 bg-zinc-50 md:rounded md:border">
       <div className="bg-zinc-100 rounded p-4">
         <b>Informações sobre o pagamento via pix:</b>
         <ul className="list-disc list-inside my-4">
           <li className="leading-relaxed">
-            Valor à vista: <b>R$ 97,00</b>.
+            Valor à vista: <b>{money(product.price)}</b>.
           </li>
           <li className="leading-relaxed">Liberação imediata!</li>
           <li className="leading-relaxed">
@@ -164,13 +169,18 @@ function PixView() {
   );
 }
 
-interface CheckoutProps {
+interface Product {
+  identification: string;
   name: string;
   image: string;
   price: number;
 }
 
-export default function Checkout({ name, image, price }: CheckoutProps) {
+interface CheckoutProps {
+  product: Product;
+}
+
+export default function Checkout({ product }: CheckoutProps) {
   const [screen, setScreen] = useState("checkout");
   const values = useRef<{ [id: string]: any }>({});
 
@@ -212,14 +222,9 @@ export default function Checkout({ name, image, price }: CheckoutProps) {
   };
 
   return screen == "pix" ? (
-    <PixScreen name={name} image={image} price={price} infos={values.current} />
+    <PixScreen product={product} infos={values.current} />
   ) : (
-    <PaymentScreen
-      name={name}
-      image={image}
-      proceed={proceed}
-      receive={receive}
-    />
+    <PaymentScreen product={product} proceed={proceed} receive={receive} />
   );
 }
 
@@ -236,9 +241,7 @@ async function createServerPIX(config: CreatePixConfig) {
 }
 
 interface PixScreenProps {
-  name: string;
-  image: string;
-  price: number;
+  product: Product;
   infos: { [id: string]: string };
 }
 
@@ -250,12 +253,11 @@ interface PixPayment {
 
 function PixScreen(props: PixScreenProps) {
   const [stage, setStage] = useState("scanning");
-
   const [pixPayment, setPixPayment] = useState<PixPayment>({});
 
   useEffect(() => {
     createServerPIX({
-      price: props.price,
+      price: props.product.price,
       name: props.infos.name,
       email: props.infos.email,
     }).then((response: PaymentResponse) => {
@@ -278,18 +280,18 @@ function PixScreen(props: PixScreenProps) {
   );
 }
 
-function PixScanningScreen({
-  name,
-  image,
-  proceed,
-  payment,
-}: PixScreenProps & { proceed: () => void; payment: PixPayment }) {
+function PixScanningScreen(
+  props: PixScreenProps & { proceed: () => void; payment: PixPayment }
+) {
   return (
     <div className="flex flex-col gap-8 w-[672px] font-opensans">
       {/* The product headline infos */}
       <div className="flex items-center gap-4 px-4">
-        <img className="max-w-[128px] max-h-[128px] rounded" src={image} />
-        <span className="text-2xl font-bold">{name}</span>
+        <img
+          className="max-w-[128px] max-h-[128px] rounded"
+          src={props.product.image}
+        />
+        <span className="text-2xl font-bold">{props.product.name}</span>
       </div>
       {/* The pix infos */}
       <div className="flex flex-col gap-2 bg-white rounded p-4 border border-zinc-300 shadow">
@@ -310,16 +312,17 @@ function PixScanningScreen({
         </div>
         <div className="text-center flex flex-col items-center justify-center w-full px-4 md:px-16 mt-8">
           {/* QR code image */}
-          {payment.qrcode && (
+          {props.payment.qrcode && (
             <img
               className="w-1/3"
-              src={"data:image/jpeg;base64," + payment.qrcode}
+              src={"data:image/jpeg;base64," + props.payment.qrcode}
             />
           )}
           {/* Copy pix code */}
           <a
             onClick={() =>
-              payment.code && navigator.clipboard.writeText(payment.code)
+              props.payment.code &&
+              navigator.clipboard.writeText(props.payment.code)
             }
             className="cursor-pointer flex relative justify-center w-full md:w-3/4 border text-white bg-gray-800 font-bold p-3 text-sm rounded text-center"
           >
@@ -339,7 +342,7 @@ function PixScanningScreen({
           </a>
           {/* Already made payment */}
           <a
-            onClick={proceed}
+            onClick={props.proceed}
             className="flex underline hover:no-underline relative justify-center w-full md:w-3/4 text-blue-700 font-bold p-3 text-base rounded text-center"
           >
             JÁ FIZ O PAGAMENTO
@@ -348,7 +351,9 @@ function PixScanningScreen({
         <div className="px-4">
           <div className="flex text-xl font-bold border-t flex-row p-4 mt-4">
             <div className="flex-1">TOTAL</div>{" "}
-            <div className="flex-1 text-right">R$97,00</div>
+            <div className="flex-1 text-right">
+              {money(props.product.price)}
+            </div>
           </div>
         </div>
       </div>
@@ -376,16 +381,12 @@ import {
 } from "./validators";
 import NewSelect from "./NewSelect";
 
-function PixConfirmingScreen({
-  name,
-  image,
-  payment,
-}: PixScreenProps & { payment: PixPayment }) {
+function PixConfirmingScreen(props: PixScreenProps & { payment: PixPayment }) {
   const [finished, setFinished] = useState(false);
   const timerRef = useRef<HTMLSpanElement>(null);
 
   async function checkPaymentStatus() {
-    const response = await fetch("/api/pix?id=" + payment.id);
+    const response = await fetch("/api/pix?id=" + props.payment.id);
     const result: Paydata = await response.json();
 
     if (result.finished) setFinished(true);
@@ -410,8 +411,11 @@ function PixConfirmingScreen({
       {finished && <Confetti />}
       {/* The product headline infos */}
       <div className="flex items-center gap-4 px-4">
-        <img className="max-w-[128px] max-h-[128px] rounded" src={image} />
-        <span className="text-2xl font-bold">{name}</span>
+        <img
+          className="max-w-[128px] max-h-[128px] rounded"
+          src={props.product.image}
+        />
+        <span className="text-2xl font-bold">{props.product.name}</span>
       </div>
       {/* The pix infos */}
       <div className="flex flex-col gap-2 bg-white rounded p-4 border border-zinc-300 shadow">
@@ -443,7 +447,7 @@ function PixConfirmingScreen({
             </div>
             <div>
               <div className="text-center text-lg text-gray-700">
-                ID: {payment.id}
+                ID: {props.payment.id}
               </div>{" "}
               <a
                 href="mailto:suporte@kiwify.com.br"
@@ -455,7 +459,9 @@ function PixConfirmingScreen({
             <div className="px-4">
               <div className="flex text-xl font-bold border-t flex-row p-4 mt-4">
                 <div className="flex-1">TOTAL</div>{" "}
-                <div className="flex-1 text-right">R$97,00</div>
+                <div className="flex-1 text-right">
+                  {money(props.product.price)}
+                </div>
               </div>
             </div>
           </>
@@ -494,7 +500,9 @@ function PixConfirmingScreen({
             <div className="px-4">
               <div className="flex text-xl font-bold border-t flex-row p-4 mt-4">
                 <div className="flex-1">TOTAL</div>{" "}
-                <div className="flex-1 text-right">R$97,00</div>
+                <div className="flex-1 text-right">
+                  {money(props.product.price)}
+                </div>
               </div>
             </div>
           </>
@@ -505,21 +513,23 @@ function PixConfirmingScreen({
 }
 
 interface PaymentScreenProps {
-  name: string;
-  image: string;
+  product: Product;
   receive: (field: string, value: string) => void;
   proceed: () => void;
 }
 
-function PaymentScreen({ name, image, receive, proceed }: PaymentScreenProps) {
+function PaymentScreen({ product, receive, proceed }: PaymentScreenProps) {
   const [tabIndex, setTabIndex] = useState(0);
 
   return (
     <div className="flex flex-col gap-8 w-[672px] font-opensans">
       {/* The product headline infos */}
       <div className="flex items-center gap-4 px-4">
-        <img className="max-w-[128px] max-h-[128px] rounded" src={image} />
-        <span className="text-2xl font-bold">{name}</span>
+        <img
+          className="max-w-[128px] max-h-[128px] rounded"
+          src={product.image}
+        />
+        <span className="text-2xl font-bold">{product.name}</span>
       </div>
       {/* The billing and payment infos */}
       <div className="flex flex-col gap-3 bg-white rounded p-2 md:p-6 border border-zinc-300 shadow">
@@ -580,10 +590,18 @@ function PaymentScreen({ name, image, receive, proceed }: PaymentScreenProps) {
             {
               name: "Cartão",
               Icon: IconCard,
-              View: () => <CardView receive={receive} />,
+              View: () => <CardView product={product} receive={receive} />,
             },
-            { name: "Boleto", Icon: IconBoleto, View: BoletoView },
-            { name: "Pix", Icon: IconPix, View: PixView },
+            {
+              name: "Boleto",
+              Icon: IconBoleto,
+              View: () => <BoletoView product={product} />,
+            },
+            {
+              name: "Pix",
+              Icon: IconPix,
+              View: () => <PixView product={product} />,
+            },
           ]}
         />
 

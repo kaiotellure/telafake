@@ -1,0 +1,14 @@
+---
+import CenteredLayout from "../layouts/CenteredLayout.astro";
+import Checkout from "../components/Checkout";
+
+import products from "../assets/products.json";
+const { id } = Astro.params;
+
+const product = products.find(x => x.identification == id);
+---
+
+<CenteredLayout>
+  <title slot="head">{product?.name}</title>
+  {product && <Checkout client:load product={product} />}
+</CenteredLayout>
