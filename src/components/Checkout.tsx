@@ -351,6 +351,7 @@ function prettyMinutes(seconds: number) {
 import Confetti from "react-confetti";
 import { cn } from "./utils";
 import NewInput from "./NewInput";
+import { cardNumberValidator, phoneValidator } from "./validators";
 
 function PixConfirmingScreen({
   name,
@@ -501,7 +502,7 @@ function PaymentScreen({ name, image, receive, proceed }: PaymentScreenProps) {
         <span className="text-2xl font-bold">{name}</span>
       </div>
       {/* The billing and payment infos */}
-      <div className="flex flex-col gap-2 bg-white rounded p-6 border border-zinc-300 shadow">
+      <div className="flex flex-col gap-4 bg-white rounded p-6 border border-zinc-300 shadow">
         <Input
           report={receive}
           id="name"
@@ -540,13 +541,19 @@ function PaymentScreen({ name, image, receive, proceed }: PaymentScreenProps) {
             ]}
             report={receive}
             id="phone"
+            mask={phoneValidator.mask}
+            validate={phoneValidator.validate}
             name="Celular com DDD"
           />
         </div>
         <NewInput
           report={receive}
-          id="phone"
+          id="card_number"
+          mask={cardNumberValidator.mask}
+          validate={cardNumberValidator.validate}
           name="Numero de cartao de credito"
+          badge={<IconSecurity />}
+          badgeTooltip="Nós protegemos seus dados de pagamento usando encriptação para prover segurança no nível de bancos."
         />
 
         <Tab
