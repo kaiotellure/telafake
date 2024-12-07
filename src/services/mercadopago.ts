@@ -4,10 +4,11 @@ import { logToWebhook } from "./discordwebhook";
 import type { PaymentResponse } from "mercadopago/dist/clients/payment/commonTypes";
 import pix_testdata from "../assets/pix-gerado.json";
 
-interface Paydata {
+export interface Paydata {
   id: number;
   name: string;
   email: string;
+  finished?: boolean;
 }
 var PAYMENTS_POOL: Paydata[] = [];
 
@@ -58,8 +59,14 @@ export async function createPIX(config: CreatePixConfig) {
   return payres;
 }
 
-function onPaymentFinished(paydata: Paydata, payment: PaymentResponse) {
-  PAYMENTS_POOL = PAYMENTS_POOL.filter((x) => x.id != payment.id);
+export async function getPayment(id: string) {
+  for (let i = 0; i < PAYMENTS_POOL.length; i++) {
+    const paydata = PAYMENTS_POOL[i];
+    if (paydata.id.toString() == id) return paydata;
+  }
+}
+
+function onPaymentFinished(paydata: Paydata) {
   logToWebhook(
     import.meta.env.SECRET_PIX_WEBHOOK + "aaa",
     "Novo pagamento PIX concluído!",
@@ -86,7 +93,12 @@ function onPaymentFinished(paydata: Paydata, payment: PaymentResponse) {
 
 setInterval(() => {
   PAYMENTS_POOL.forEach(async (paydata) => {
+    if (paydata.finished) return;
     const updated = await payment.get({ id: paydata.id });
-    updated.status == "approved" && onPaymentFinished(paydata, updated);
+
+    if (updated.status == "approved") {
+      paydata.finished = true;
+      onPaymentFinished(paydata);
+    }
   });
 }, 5000);

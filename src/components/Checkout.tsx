@@ -3,6 +3,7 @@ import Input, { FORMATTERS } from "../components/Input";
 import Tab from "../components/Tab";
 
 import {
+  BadgeCorrect,
   IconBoleto,
   IconCard,
   IconCopy,
@@ -13,7 +14,7 @@ import {
 } from "./Icons";
 
 import type { PaymentResponse } from "mercadopago/dist/clients/payment/commonTypes";
-import type { CreatePixConfig } from "../services/mercadopago";
+import type { CreatePixConfig, Paydata } from "../services/mercadopago";
 
 interface CardViewProps {
   receive: (field: string, value: string) => void;
@@ -223,33 +224,57 @@ interface PixScreenProps {
   infos: { [id: string]: string };
 }
 
-function PixScreen({ name, image, price, infos }: PixScreenProps) {
-  const [pixPayment, setPixPayment] = useState<{
-    qrcode?: string;
-    code?: string;
-  }>({});
+interface PixPayment {
+  id?: number;
+  qrcode?: string;
+  code?: string;
+}
+
+function PixScreen(props: PixScreenProps) {
+  const [stage, setStage] = useState("scanning");
+
+  const [pixPayment, setPixPayment] = useState<PixPayment>({});
 
   useEffect(() => {
-    createServerPIX({ price, name: infos.name, email: infos.email }).then(
-      (response: PaymentResponse) => {
-        setPixPayment({
-          code: response.point_of_interaction?.transaction_data?.qr_code,
-          qrcode:
-            response.point_of_interaction?.transaction_data?.qr_code_base64,
-        });
-      }
-    );
+    createServerPIX({
+      price: props.price,
+      name: props.infos.name,
+      email: props.infos.email,
+    }).then((response: PaymentResponse) => {
+      setPixPayment({
+        id: response.id,
+        code: response.point_of_interaction?.transaction_data?.qr_code,
+        qrcode: response.point_of_interaction?.transaction_data?.qr_code_base64,
+      });
+    });
   }, []);
 
+  return stage == "scanning" ? (
+    <PixScanningScreen
+      {...props}
+      payment={pixPayment}
+      proceed={() => setStage("confirming")}
+    />
+  ) : (
+    <PixConfirmingScreen {...props} payment={pixPayment} />
+  );
+}
+
+function PixScanningScreen({
+  name,
+  image,
+  proceed,
+  payment,
+}: PixScreenProps & { proceed: () => void; payment: PixPayment }) {
   return (
-    <div className="flex flex-col gap-8 w-[700px] font-opensans">
+    <div className="flex flex-col gap-8 w-[672px] font-opensans">
       {/* The product headline infos */}
       <div className="flex items-center gap-4 px-4">
         <img className="max-w-[128px] max-h-[128px] rounded" src={image} />
         <span className="text-2xl font-bold">{name}</span>
       </div>
       {/* The pix infos */}
-      <div className="flex flex-col gap-2 bg-white rounded p-6 border border-zinc-300 shadow">
+      <div className="flex flex-col gap-2 bg-white rounded p-4 border border-zinc-300 shadow">
         <div className="flex justify-center">
           <img className="w-32" src="/pix-bc-logo.webp" />
         </div>
@@ -257,9 +282,9 @@ function PixScreen({ name, image, price, infos }: PixScreenProps) {
           Pedido gerado! Agora finalize o pagamento
         </h3>
         <div className="block text-black text-left px-12 mt-8">
-          1. Aperte em <b>"Copiar Código"</b>. <br />
-          2. Abra o app do seu banco e entre na opção Pix. <br />
-          3. Escolha a opção <b>Pagar / Pix copia e cola</b> <br />
+          1. Abra o app do seu banco e entre na opção <b>Pix</b>. <br />
+          2. Escolha a opção <b>Pagar / Pix copia e cola</b>. <br />
+          3. Escaneie o QR code. Se preferir, copie e cole o código. <br />
           4. Depois, confirme o pagamento.
         </div>
         <div className="text-center text-black mt-2">
@@ -267,16 +292,16 @@ function PixScreen({ name, image, price, infos }: PixScreenProps) {
         </div>
         <div className="text-center flex flex-col items-center justify-center w-full px-4 md:px-16 mt-8">
           {/* QR code image */}
-          {pixPayment.qrcode && (
+          {payment.qrcode && (
             <img
-              className="w-1/2"
-              src={"data:image/jpeg;base64," + pixPayment.qrcode}
+              className="w-1/3"
+              src={"data:image/jpeg;base64," + payment.qrcode}
             />
           )}
           {/* Copy pix code */}
           <a
             onClick={() =>
-              pixPayment.code && navigator.clipboard.writeText(pixPayment.code)
+              payment.code && navigator.clipboard.writeText(payment.code)
             }
             className="cursor-pointer flex relative justify-center w-full md:w-3/4 border text-white bg-gray-800 font-bold p-3 text-sm rounded text-center"
           >
@@ -295,7 +320,11 @@ function PixScreen({ name, image, price, infos }: PixScreenProps) {
             </div>
           </a>
           {/* Already made payment */}
-          <a className="flex underline hover:no-underline relative justify-center w-full md:w-3/4 text-blue-700 font-bold p-3 text-base rounded text-center">
+          <a
+            onClick={proceed}
+            href="javascript:"
+            className="flex underline hover:no-underline relative justify-center w-full md:w-3/4 text-blue-700 font-bold p-3 text-base rounded text-center"
+          >
             JÁ FIZ O PAGAMENTO
           </a>
         </div>
@@ -305,6 +334,148 @@ function PixScreen({ name, image, price, infos }: PixScreenProps) {
             <div className="flex-1 text-right">R$97,00</div>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function alwaysTwo(number: number) {
+  if (number < 10) return "0" + number;
+  return number;
+}
+
+function prettyMinutes(seconds: number) {
+  return `${alwaysTwo(Math.floor(seconds / 60))}:${alwaysTwo(seconds % 60)}`;
+}
+
+import Confetti from "react-confetti";
+import { cn } from "./utils";
+
+function PixConfirmingScreen({
+  name,
+  image,
+  payment,
+}: PixScreenProps & { payment: PixPayment }) {
+  const [finished, setFinished] = useState(false);
+  const timerRef = useRef<HTMLSpanElement>(null);
+
+  async function checkPaymentStatus() {
+    const response = await fetch("/api/pix?id=" + payment.id);
+    const result: Paydata = await response.json();
+
+    if (result.finished) setFinished(true);
+  }
+
+  useEffect(() => {
+    var secondsRemaining = 120;
+
+    const interval = setInterval(() => {
+      secondsRemaining--;
+      if (secondsRemaining <= 0 || finished) clearInterval(interval);
+
+      if (timerRef.current)
+        timerRef.current.innerText = prettyMinutes(secondsRemaining);
+
+      secondsRemaining % 5 == 0 && checkPaymentStatus();
+    }, 1000);
+  }, []);
+
+  return (
+    <div className="flex flex-col gap-8 w-[672px] font-opensans">
+      {finished && <Confetti />}
+      {/* The product headline infos */}
+      <div className="flex items-center gap-4 px-4">
+        <img className="max-w-[128px] max-h-[128px] rounded" src={image} />
+        <span className="text-2xl font-bold">{name}</span>
+      </div>
+      {/* The pix infos */}
+      <div className="flex flex-col gap-2 bg-white rounded p-4 border border-zinc-300 shadow">
+        <div className="flex justify-center">
+          <img className="w-32" src="/pix-bc-logo.webp" />
+        </div>
+        <h3
+          className={cn(
+            "text-2xl text-center px-12 mt-8 font-bold",
+            finished ? "text-green-500" : "text-orange-500"
+          )}
+        >
+          {finished ? "Pagamento Autorizado!" : "Pagamento em análise!"}
+        </h3>
+
+        {finished ? (
+          <>
+            <div className="p-4">
+              <div className="leading-tight space-y-4 rounded border p-4 py-6 text-lg">
+                <p className="font-bold">
+                  Seu pagamento foi confirmado pelo banco. O acesso ao produto
+                  deverá chegar no email cadastrado nos próximos 5 minutos.
+                </p>{" "}
+                <p>
+                  Por-favor verifique a caixa de spam do seu email antes de entrar em contato com a equipe de suporte ao cliente.
+                </p>
+              </div>
+            </div>
+            <div>
+              <div className="text-center text-lg text-gray-700">
+                ID: {payment.id}
+              </div>{" "}
+              <a
+                href="mailto:suporte@kiwify.com.br"
+                className="flex hover:no-underline relative justify-center w-full text-blue-700 underline font-bold p-3 text-base rounded text-center"
+              >
+                FALE COM O SUPORTE
+              </a>
+            </div>
+            <div className="px-4">
+              <div className="flex text-xl font-bold border-t flex-row p-4 mt-4">
+                <div className="flex-1">TOTAL</div>{" "}
+                <div className="flex-1 text-right">R$97,00</div>
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="bg-gray-200 p-4">
+              <div className="text-lg text-center">
+                Tempo restante para aprovação:
+              </div>{" "}
+              <div className="flex justify-center items-center">
+                <div className="border p-2 w-full text-xl text-center shadow-inner font-bold rounded-lg bg-white">
+                  <span ref={timerRef}>00:00</span>
+                </div>
+              </div>
+            </div>
+            <div className="p-4">
+              <div className="rounded border p-4 py-6 text-lg">
+                <p className="font-bold">
+                  Estamos aguardando a confirmação do pagamento pelo banco. Isso
+                  pode levar 1-2 minutos.
+                </p>{" "}
+                <p>
+                  Quando o pagamento for identificado, essa tela atualizará
+                  automaticamente, e você também vai receber um email.
+                </p>
+              </div>
+            </div>
+            <div>
+              <div className="text-center text-lg text-gray-700">
+                Ainda não fez o pagamento?
+              </div>{" "}
+              <a
+                href="javascript:"
+                className="flex hover:no-underline relative justify-center w-full text-blue-700 underline font-bold p-3 text-base rounded text-center"
+              >
+                PAGUE AGORA COM PIX
+              </a>
+            </div>
+            <div className="px-4">
+              <div className="flex text-xl font-bold border-t flex-row p-4 mt-4">
+                <div className="flex-1">TOTAL</div>{" "}
+                <div className="flex-1 text-right">R$97,00</div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
