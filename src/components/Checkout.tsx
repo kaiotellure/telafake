@@ -534,11 +534,20 @@ function PaymentScreen({ name, image, receive, proceed }: PaymentScreenProps) {
             formatter="cpf"
           />
           <NewInput
+            select={[
+              { name: "🇧🇷 +55", value: "brazil" },
+              { name: "🇺🇸 +1", value: "usa" },
+            ]}
             report={receive}
             id="phone"
             name="Celular com DDD"
           />
         </div>
+        <NewInput
+          report={receive}
+          id="phone"
+          name="Numero de cartao de credito"
+        />
 
         <Tab
           report={receive}
