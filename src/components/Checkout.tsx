@@ -350,6 +350,7 @@ function prettyMinutes(seconds: number) {
 
 import Confetti from "react-confetti";
 import { cn } from "./utils";
+import NewInput from "./NewInput";
 
 function PixConfirmingScreen({
   name,
@@ -411,7 +412,8 @@ function PixConfirmingScreen({
                   deverá chegar no email cadastrado nos próximos 5 minutos.
                 </p>{" "}
                 <p>
-                  Por-favor verifique a caixa de spam do seu email antes de entrar em contato com a equipe de suporte ao cliente.
+                  Por-favor verifique a caixa de spam do seu email antes de
+                  entrar em contato com a equipe de suporte ao cliente.
                 </p>
               </div>
             </div>
@@ -524,12 +526,17 @@ function PaymentScreen({ name, image, receive, proceed }: PaymentScreenProps) {
         />
 
         <div className="flex gap-2 mb-6">
-          <Input report={receive} id="cpf" name="CPF" formatter="cpf" />
           <Input
+            report={receive}
+            initialValue="22222222222"
+            id="cpf"
+            name="CPF"
+            formatter="cpf"
+          />
+          <NewInput
             report={receive}
             id="phone"
             name="Celular com DDD"
-            formatter="empty"
           />
         </div>
 

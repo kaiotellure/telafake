@@ -77,14 +77,13 @@ export default function Input({
   max,
   report,
 }: Props & PropsWithChildren) {
-  const [value, setValue] = useState(initialValue || "");
+  const f = FORMATTERS[formatter];
+
+  const [value, setValue] = useState(f.mask(initialValue || ""));
   const [error, setError] = useState(``);
 
-  useEffect(() => {
-    report(id, value);
-  }, []);
 
-  const f = FORMATTERS[formatter];
+  useEffect(() => report(id, value), []);
 
   const transform = (value: string) => {
     const masked = f.mask(value);
