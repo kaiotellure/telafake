@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import Input, { FORMATTERS } from "../components/Input";
+
 import Tab from "../components/Tab";
+import NewInput from "./NewInput";
+import NewSelect from "./NewSelect";
+import { cn } from "./utils";
 
 import {
-  BadgeCorrect,
   IconBoleto,
   IconCard,
   IconCopy,
@@ -14,7 +16,18 @@ import {
 } from "./Icons";
 
 import type { PaymentResponse } from "mercadopago/dist/clients/payment/commonTypes";
-import type { CreatePixConfig, Paydata } from "../services/mercadopago";
+import type { Paydata } from "../services/mercadopago";
+
+import Confetti from "react-confetti";
+
+import {
+  cardNumberValidator,
+  cpfValidator,
+  emailValidator,
+  phoneValidator,
+} from "./validators";
+
+import type { PostPixPayload } from "../pages/api/pix";
 
 interface CardViewProps {
   product: Product;
@@ -170,7 +183,7 @@ function PixView({ product }: { product: Product }) {
 }
 
 interface Product {
-  identification: string;
+  id: string;
   name: string;
   image: string;
   price: number;
@@ -228,13 +241,13 @@ export default function Checkout({ product }: CheckoutProps) {
   );
 }
 
-async function createServerPIX(config: CreatePixConfig) {
+async function createPIXPayment(payload: PostPixPayload) {
   const response = await fetch("/api/pix", {
     method: "POST",
     headers: {
       "content-type": "application/json",
     },
-    body: JSON.stringify(config),
+    body: JSON.stringify(payload),
   });
 
   return response.json();
@@ -256,10 +269,10 @@ function PixScreen(props: PixScreenProps) {
   const [pixPayment, setPixPayment] = useState<PixPayment>({});
 
   useEffect(() => {
-    createServerPIX({
-      price: props.product.price,
-      name: props.infos.name,
-      email: props.infos.email,
+    createPIXPayment({
+      payer_name: props.infos.name,
+      payer_email: props.infos.email,
+      product_id: props.product.id,
     }).then((response: PaymentResponse) => {
       setPixPayment({
         id: response.id,
@@ -369,17 +382,6 @@ function alwaysTwo(number: number) {
 function prettyMinutes(seconds: number) {
   return `${alwaysTwo(Math.floor(seconds / 60))}:${alwaysTwo(seconds % 60)}`;
 }
-
-import Confetti from "react-confetti";
-import { cn } from "./utils";
-import NewInput from "./NewInput";
-import {
-  cardNumberValidator,
-  cpfValidator,
-  emailValidator,
-  phoneValidator,
-} from "./validators";
-import NewSelect from "./NewSelect";
 
 function PixConfirmingScreen(props: PixScreenProps & { payment: PixPayment }) {
   const [finished, setFinished] = useState(false);

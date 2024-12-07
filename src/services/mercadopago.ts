@@ -3,6 +3,7 @@ import { logToWebhook } from "./discordwebhook";
 
 import type { PaymentResponse } from "mercadopago/dist/clients/payment/commonTypes";
 import pix_testdata from "../assets/pix-gerado.json";
+import type { PostPixPayload } from "../pages/api/pix";
 
 export interface Paydata {
   id: number;
@@ -19,24 +20,18 @@ const client = new MercadoPagoConfig({
 
 const payment = new Payment(client);
 
-export interface CreatePixConfig {
-  price: number;
-  email: string;
-  name: string;
-}
-
-export async function createPIX(config: CreatePixConfig) {
+export async function createPIX(config: PostPixPayload & {price: number}) {
   const body = {
     transaction_amount: config.price,
     description: "this product has no description.",
     payment_method_id: "pix",
     payer: {
-      email: config.email,
+      email: config.payer_email,
     },
   };
 
   const requestOptions = {
-    idempotencyKey: config.email + "-pix-creation",
+    idempotencyKey: config.payer_email + "-pix-creation",
   };
 
   var payres: PaymentResponse;
@@ -52,8 +47,8 @@ export async function createPIX(config: CreatePixConfig) {
   payres.id &&
     PAYMENTS_POOL.push({
       id: payres.id,
-      email: config.email,
-      name: config.name,
+      email: config.payer_email,
+      name: config.payer_name,
     });
 
   return payres;
