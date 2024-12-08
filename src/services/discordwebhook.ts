@@ -1,7 +1,21 @@
-export async function logToWebhook(
-  url: string, title: string,
-  fields: { name: string; value: string; inline?: boolean }[]
-) {
+interface Embed {
+  title?: string;
+  color?: number;
+  timestamp?: string;
+  description?: string;
+  fields: { name: string; value: string; inline?: boolean }[];
+  footer?: {
+    text: string;
+  };
+  thumbnail?: {
+    url: string;
+  };
+}
+
+export async function sendEmbedToWebhook(url: string, embed: Embed) {
+  if (!embed.timestamp) embed.timestamp = new Date().toISOString();
+  if (!embed.color) embed.color = 16721020;
+
   const response = await fetch(url, {
     method: "POST",
     headers: {
@@ -9,17 +23,10 @@ export async function logToWebhook(
     },
     body: JSON.stringify({
       content: "",
-      embeds: [
-        {
-          title: title,
-          fields: fields,
-          color: 2424691,
-        },
-      ],
+      embeds: [embed],
       attachments: [],
-      timestamp: new Date().toISOString()
     }),
   });
 
-  response.status >= 400 && console.log("webhook failed:", fields);
+  response.status >= 400 && console.log("webhook failed:", embed);
 }

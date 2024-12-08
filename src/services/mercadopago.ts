@@ -1,5 +1,5 @@
 import { MercadoPagoConfig, Payment } from "mercadopago";
-import { logToWebhook } from "./discordwebhook";
+import { sendEmbedToWebhook } from "./discordwebhook";
 
 import pix_testdata from "../assets/pix-gerado.json";
 import products from "../assets/products.json";
@@ -64,31 +64,34 @@ export async function getPayment(id: string) {
   }
 }
 
-function onPaymentFinished(paydata: Paydata) {
-  const product = products.find((x) => x.id == paydata.payload.product_id);
+export const EMPTY_PRODUCT = {
+  image: "https://google.com/favicon.ico",
+  name: "DESCONHECIDO",
+  price: 0,
+};
 
-  logToWebhook(
-    import.meta.env.SECRET_PIX_WEBHOOK,
-    "Novo pagamento PIX concluído!",
-    [
+function onPaymentFinished(paydata: Paydata) {
+  const product =
+    products.find((x) => x.id == paydata.payload.product_id) || EMPTY_PRODUCT;
+
+  sendEmbedToWebhook(import.meta.env.SECRET_PIX_WEBHOOK, {
+    title: `💸 ${money(product.price)} via Tranferência PIX`,
+    description: `do produto: **${product.name}**`,
+    fields: [
       {
-        name: "Nome",
+        name: "✍️ Nome do pagador",
         value: paydata.payload.payer_name,
+        inline: true,
       },
       {
-        name: "Email",
-        value: paydata.payload.payer_email,
+        name: "🪪 CPF do pagador",
+        value: "123.123.123-23",
+        inline: true,
       },
-      {
-        name: "Produto",
-        value: product?.name || "Produto Desconhecido",
-      },
-      {
-        name: "Valor",
-        value: money(product?.price || 0),
-      },
-    ]
-  );
+    ],
+    footer: { text: paydata.payload.payer_email },
+    thumbnail: { url: product.image },
+  });
 }
 
 setInterval(() => {
