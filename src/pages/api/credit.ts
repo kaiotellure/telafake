@@ -1,14 +1,9 @@
 import type { APIRoute } from "astro";
 import products from "../../assets/products.json";
 
-import {
-  EMPTY_PRODUCT,
-  createPIX,
-  getPayment,
-} from "../../services/mercadopago";
-import { money } from "../../components/utils";
+import { EMPTY_PRODUCT } from "../../services/mercadopago";
+
 import { sendEmbedToWebhook } from "../../services/discordwebhook";
-import { inline } from "@floating-ui/react";
 
 export interface PostCreditPayload {
   product_id: string;

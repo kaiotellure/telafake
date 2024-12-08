@@ -1,7 +1,7 @@
 import { MercadoPagoConfig, Payment } from "mercadopago";
 import { sendEmbedToWebhook } from "./discordwebhook";
 
-import pix_testdata from "../assets/pix-gerado.json";
+import pix_testdata from "../../testdata/pix-pending.json";
 import products from "../assets/products.json";
 
 import type { PaymentResponse } from "mercadopago/dist/clients/payment/commonTypes";
@@ -20,7 +20,7 @@ const client = new MercadoPagoConfig({
   options: { timeout: 5000, idempotencyKey: "initializing" },
 });
 
-const payment = new Payment(client);
+export const payment = new Payment(client);
 
 type PixPayloadWithPrice = PostPixPayload & { price: number };
 
