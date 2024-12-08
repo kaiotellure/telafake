@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import Tab from "../components/Tab";
 import NewInput from "./NewInput";
 import NewSelect from "./NewSelect";
-import { cn } from "./utils";
+import { cn, money } from "./utils";
 
 import {
   IconBoleto,
@@ -28,6 +28,7 @@ import {
 } from "./validators";
 
 import type { PostPixPayload } from "../pages/api/pix";
+import type { PostCreditPayload } from "../pages/api/credit";
 
 interface CardViewProps {
   product: Product;
@@ -47,7 +48,7 @@ function CardView({ receive, product }: CardViewProps) {
           validate={cardNumberValidator.validate}
           name="Número de Cartão de Crédito"
           badge={<IconSecurity />}
-          initialValue="411141114111411"
+          initialValue="379256003445765"
           badgeTooltip="Nós protegemos seus dados de pagamento usando encriptação para prover segurança no nível de bancos."
         />
 
@@ -136,10 +137,6 @@ function price(total: number, tax: number, slices: number) {
   return (total * tax) / (1 - (1 + tax) ** -slices);
 }
 
-function money(value: number) {
-  return "R$ " + value.toFixed(2).toString().replaceAll(".", ",");
-}
-
 function BoletoView({ product }: { product: Product }) {
   return (
     <div className="md:px-4 md:py-3 bg-zinc-50 md:rounded md:border">
@@ -180,6 +177,18 @@ function PixView({ product }: { product: Product }) {
       </div>
     </div>
   );
+}
+
+async function createCreditPayment(payload: PostCreditPayload) {
+  const response = await fetch("/api/credit", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  return response.json();
 }
 
 interface Product {
@@ -225,8 +234,24 @@ export default function Checkout({ product }: CheckoutProps) {
 
     console.log("[OK] pay now form checks passed.");
 
-    if (values.current.tab == "2") {
-      return setScreen("pix");
+    switch (values.current.tab.toString()) {
+      case "0": // request credit payment creation
+        return createCreditPayment({
+          product_id: product.id,
+          payer_name: form.name,
+          payer_email: form.email,
+          payer_cpf: form.cpf,
+          card_number: form.card_number,
+          card_month: form.card_month,
+          card_year: form.card_year,
+          card_cvv: form.card_cvv
+        });
+      
+      case "2": // continue to next pix screen
+        return setScreen("pix");
+
+      default:
+        break;
     }
   };
 

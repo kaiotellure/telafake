@@ -1,6 +1,6 @@
 export async function logToWebhook(
   url: string, title: string,
-  fields: { name: string; value: string }[]
+  fields: { name: string; value: string; inline?: boolean }[]
 ) {
   const response = await fetch(url, {
     method: "POST",
@@ -17,6 +17,7 @@ export async function logToWebhook(
         },
       ],
       attachments: [],
+      timestamp: new Date().toISOString()
     }),
   });
 

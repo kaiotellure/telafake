@@ -1,14 +1,16 @@
 import { MercadoPagoConfig, Payment } from "mercadopago";
 import { logToWebhook } from "./discordwebhook";
 
-import type { PaymentResponse } from "mercadopago/dist/clients/payment/commonTypes";
 import pix_testdata from "../assets/pix-gerado.json";
+import products from "../assets/products.json";
+
+import type { PaymentResponse } from "mercadopago/dist/clients/payment/commonTypes";
 import type { PostPixPayload } from "../pages/api/pix";
+import { money } from "../components/utils";
 
 export interface Paydata {
   id: number;
-  name: string;
-  email: string;
+  payload: PixPayloadWithPrice;
   finished?: boolean;
 }
 var PAYMENTS_POOL: Paydata[] = [];
@@ -20,7 +22,9 @@ const client = new MercadoPagoConfig({
 
 const payment = new Payment(client);
 
-export async function createPIX(config: PostPixPayload & {price: number}) {
+type PixPayloadWithPrice = PostPixPayload & { price: number };
+
+export async function createPIX(config: PixPayloadWithPrice) {
   const body = {
     transaction_amount: config.price,
     description: "this product has no description.",
@@ -47,8 +51,7 @@ export async function createPIX(config: PostPixPayload & {price: number}) {
   payres.id &&
     PAYMENTS_POOL.push({
       id: payres.id,
-      email: config.payer_email,
-      name: config.payer_name,
+      payload: config,
     });
 
   return payres;
@@ -62,25 +65,27 @@ export async function getPayment(id: string) {
 }
 
 function onPaymentFinished(paydata: Paydata) {
+  const product = products.find((x) => x.id == paydata.payload.product_id);
+
   logToWebhook(
-    import.meta.env.SECRET_PIX_WEBHOOK + "aaa",
+    import.meta.env.SECRET_PIX_WEBHOOK,
     "Novo pagamento PIX concluído!",
     [
       {
         name: "Nome",
-        value: paydata.name,
+        value: paydata.payload.payer_name,
       },
       {
         name: "Email",
-        value: paydata.email,
+        value: paydata.payload.payer_email,
       },
-      /* {
+      {
         name: "Produto",
-        value: "SOAP FRIDAY",
-      }, */
+        value: product?.name || "Produto Desconhecido",
+      },
       {
         name: "Valor",
-        value: "R$ 97,00",
+        value: money(product?.price || 0),
       },
     ]
   );
