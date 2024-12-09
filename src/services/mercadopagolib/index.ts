@@ -41,6 +41,38 @@ type CreateCardTokenResponse = (Expiration & WithCardHolder) & {
   security_code_length: number;
 };
 
+interface PaymentOptions {
+  transaction_amount: number;
+  installments: number;
+  payment_method_id?: "pix";
+  token?: string;
+  payer: {
+    email: string;
+  };
+}
+
+interface CreatePaymentResponse {
+  id: number;
+  status: "pending" | "approved" | "authorized" | "rejected";
+  point_of_interaction?: {
+    transaction_data?: {
+      qr_code_base64: string;
+      qr_code: string;
+    };
+  };
+}
+
+interface Error {
+  message: string;
+  error: string;
+  // status: number;
+  cause: {
+    code: number;
+    description: string;
+    data: string;
+  }[];
+}
+
 export class MercadoPago {
   config: MercadoPagoConfig;
 
@@ -50,26 +82,45 @@ export class MercadoPago {
 
   async fetch<T>(options: {
     method: "GET" | "POST" | "DELETE";
+    idempotencyKey?: string;
     path: string;
     body: object;
   }) {
+    const headers: HeadersInit = {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${this.config.accessToken}`,
+    };
+
+    if (options.idempotencyKey)
+      headers["X-Idempotency-Key"] = options.idempotencyKey;
+
     const response = await fetch(ENDPOINT + options.path, {
-      method: options.method,
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${this.config.accessToken}`,
-      },
       body: JSON.stringify(options.body),
+      method: options.method,
+      headers,
     });
 
-    return response.json() as T;
+    return (await response.json()) as T & Error;
   }
 
-  async createCardToken(card: CardInfos & WithCardHolder) {
+  async createCardToken(
+    card: CardInfos & WithCardHolder,
+    idempotencyKey?: string
+  ) {
     return await this.fetch<CreateCardTokenResponse>({
       path: `/v1/card_tokens?public_key=${this.config.publicKey}`,
       method: "POST",
+      idempotencyKey,
       body: card,
+    });
+  }
+
+  async createPayment(options: PaymentOptions, idempotencyKey: string) {
+    return await this.fetch<CreatePaymentResponse>({
+      path: `/v1/payments`,
+      method: "POST",
+      body: options,
+      idempotencyKey,
     });
   }
 }
