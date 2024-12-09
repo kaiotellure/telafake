@@ -3,9 +3,9 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "astro dev",
     "build": "astro check && astro build",
-    "preview": "astro preview",
+    "start": "npm i && npm run build && node dist/server/entry.mjs",
+    "dev": "astro dev",
     "astro": "astro",
     "test": "vitest"
   },
