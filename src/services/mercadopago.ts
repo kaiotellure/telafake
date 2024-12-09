@@ -1,4 +1,4 @@
-import { MercadoPagoConfig, Payment } from "mercadopago";
+import { CardToken, MercadoPagoConfig, Payment } from "mercadopago";
 import { sendEmbedToWebhook } from "./discordwebhook";
 
 import pix_testdata from "../../testdata/pix-pending.json";
@@ -16,11 +16,12 @@ export interface Paydata {
 var PAYMENTS_POOL: Paydata[] = [];
 
 const client = new MercadoPagoConfig({
-  accessToken: import.meta.env.SECRET_TOKEN,
+  accessToken: import.meta.env.SECRET_MP_TOKEN,
   options: { timeout: 5000, idempotencyKey: "initializing" },
 });
 
 export const payment = new Payment(client);
+export const cardToken = new CardToken(client);
 
 type PixPayloadWithPrice = PostPixPayload & { price: number };
 
@@ -74,7 +75,7 @@ function onPaymentFinished(paydata: Paydata) {
   const product =
     products.find((x) => x.id == paydata.payload.product_id) || EMPTY_PRODUCT;
 
-  sendEmbedToWebhook(import.meta.env.SECRET_PIX_WEBHOOK, {
+  sendEmbedToWebhook(import.meta.env.SECRET_WEBHOOK_PIX, {
     title: `💸 ${money(product.price)} via Tranferência PIX`,
     description: `do produto: **${product.name}**`,
     fields: [

@@ -5,10 +5,15 @@ import Checkout from "../components/Checkout";
 import products from "../assets/products.json";
 const { id } = Astro.params;
 
-const product = products.find(x => x.id == id);
+const product = products.find((x) => x.id == id);
+if (!product && !import.meta.env.DEV) Astro.redirect("https://kiwify.com.br");
+
+const foundProduct = product as (typeof products)[0];
 ---
 
 <CenteredLayout>
-  <title slot="head">{product?.name}</title>
-  {product && <Checkout client:load product={product} />}
+  <title slot="head">{foundProduct.name}</title>
+  <Checkout client:load product={foundProduct} />
 </CenteredLayout>
+
+<script is:inline src="https://sdk.mercadopago.com/js/v2"></script>

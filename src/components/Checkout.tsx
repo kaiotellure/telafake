@@ -29,6 +29,7 @@ import {
 
 import type { PostPixPayload } from "../pages/api/pix";
 import type { PostCreditPayload } from "../pages/api/credit";
+import type { CardTokenResponse } from "mercadopago/dist/clients/cardToken/commonTypes";
 
 interface CardViewProps {
   product: Product;
@@ -180,6 +181,21 @@ function PixView({ product }: { product: Product }) {
 }
 
 async function createCreditPayment(payload: PostCreditPayload) {
+  //@ts-expect-error
+  const MP = new MercadoPago(import.meta.env.PUBLIC_MP_KEY);
+
+  const token = (await MP.createCardToken({
+    cardNumber: payload.card_number.replace(/\D/g, ""),
+    cardholderName: payload.payer_name,
+    cardExpirationMonth: payload.card_month,
+    cardExpirationYear: payload.card_year,
+    securityCode: payload.card_cvv,
+    identificationType: "CPF",
+    identificationNumber: payload.payer_cpf.replace(/\D/g, ""),
+  })) as CardTokenResponse;
+
+  console.log("generated card token:", token);
+
   const response = await fetch("/api/credit", {
     method: "POST",
     headers: {
@@ -244,9 +260,9 @@ export default function Checkout({ product }: CheckoutProps) {
           card_number: form.card_number,
           card_month: form.card_month,
           card_year: form.card_year,
-          card_cvv: form.card_cvv
+          card_cvv: form.card_cvv,
         });
-      
+
       case "2": // continue to next pix screen
         return setScreen("pix");
 
