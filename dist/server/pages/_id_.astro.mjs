@@ -4,8 +4,8 @@ import 'kleur/colors';
 import 'clsx';
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
 import { useEffect, useState, useMemo, useRef } from 'react';
-import { c as cn, m as money, p as products } from '../chunks/utils_Cv9ChJpT.mjs';
 import Confetti from 'react-confetti';
+import { c as cn, m as money, p as products } from '../chunks/utils_Cv9ChJpT.mjs';
 import CC from 'card-validator';
 import CPF from 'cpf-check';
 export { renderers } from '../renderers.mjs';
@@ -627,7 +627,10 @@ async function createCreditPayment(payload) {
     headers: {
       "content-type": "application/json"
     },
-    body: JSON.stringify(payload)
+    body: JSON.stringify({
+      ...payload,
+      card_token_id: token.id
+    })
   });
   return response.json();
 }

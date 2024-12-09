@@ -1,10 +1,11 @@
+import type { CardTokenResponse } from "mercadopago/dist/clients/cardToken/commonTypes";
+import type { PaymentResponse } from "mercadopago/dist/clients/payment/commonTypes";
 import { useEffect, useRef, useState } from "react";
-
+import Confetti from "react-confetti";
 import Tab from "../components/Tab";
-import NewInput from "./NewInput";
-import NewSelect from "./NewSelect";
-import { cn, money } from "./utils";
-
+import type { PostCreditPayload } from "../pages/api/credit";
+import type { PostPixPayload } from "../pages/api/pix";
+import type { Paydata } from "../services/mercadopago";
 import {
   IconBoleto,
   IconCard,
@@ -14,22 +15,15 @@ import {
   IconQRCode,
   IconSecurity,
 } from "./Icons";
-
-import type { PaymentResponse } from "mercadopago/dist/clients/payment/commonTypes";
-import type { Paydata } from "../services/mercadopago";
-
-import Confetti from "react-confetti";
-
+import NewInput from "./NewInput";
+import NewSelect from "./NewSelect";
+import { cn, money } from "./utils";
 import {
   cardNumberValidator,
   cpfValidator,
   emailValidator,
   phoneValidator,
 } from "./validators";
-
-import type { PostPixPayload } from "../pages/api/pix";
-import type { PostCreditPayload } from "../pages/api/credit";
-import type { CardTokenResponse } from "mercadopago/dist/clients/cardToken/commonTypes";
 
 interface CardViewProps {
   product: Product;
@@ -201,7 +195,10 @@ async function createCreditPayment(payload: PostCreditPayload) {
     headers: {
       "content-type": "application/json",
     },
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      ...payload,
+      card_token_id: token.id,
+    }),
   });
 
   return response.json();
@@ -335,7 +332,7 @@ function PixScreen(props: PixScreenProps) {
 }
 
 function PixScanningScreen(
-  props: PixScreenProps & { proceed: () => void; payment: PixPayment }
+  props: PixScreenProps & { proceed: () => void; payment: PixPayment },
 ) {
   return (
     <div className="flex flex-col gap-8 w-[672px] font-opensans">
@@ -468,7 +465,7 @@ function PixConfirmingScreen(props: PixScreenProps & { payment: PixPayment }) {
         <h3
           className={cn(
             "text-2xl text-center px-12 mt-8 font-bold",
-            finished ? "text-green-500" : "text-orange-500"
+            finished ? "text-green-500" : "text-orange-500",
           )}
         >
           {finished ? "Pagamento Autorizado!" : "Pagamento em análise!"}

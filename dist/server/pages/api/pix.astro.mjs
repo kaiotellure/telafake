@@ -1,5 +1,5 @@
 import { p as products } from '../../chunks/utils_Cv9ChJpT.mjs';
-import { c as createPIX, g as getPayment } from '../../chunks/mercadopago_CkyDbdOX.mjs';
+import { c as createPIX, g as getPayment } from '../../chunks/mercadopago_IiVcFx1V.mjs';
 export { renderers } from '../../renderers.mjs';
 
 const prerender = false;

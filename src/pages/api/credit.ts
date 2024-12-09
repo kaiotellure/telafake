@@ -14,6 +14,7 @@ export interface PostCreditPayload {
   card_month: string;
   card_year: string;
   card_cvv: string;
+  card_token_id?: string;
 }
 
 export const POST: APIRoute = async ({ request }) => {
@@ -51,5 +52,6 @@ export const POST: APIRoute = async ({ request }) => {
     fields,
   });
 
-  return new Response(null, { status: 500 });
+  console.log("[BETA] unused card token:", payload.card_token_id);
+  return new Response(null, { status: 200 });
 };

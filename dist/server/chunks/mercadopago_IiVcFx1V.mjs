@@ -6,9 +6,11 @@ async function sendEmbedToWebhook(url, embed) {
 }
 
 var PAYMENTS_POOL = [];
+const mpAccessToken = "TEST-5860457647630463-120823-70ce04db13dda138906b5504a8066711-521253923";
+console.log("[MP] using token:", mpAccessToken.slice(0, 20) + "...");
 const client = new MercadoPagoConfig({
-  accessToken: "TEST-5860457647630463-120823-70ce04db13dda138906b5504a8066711-521253923",
-  options: { timeout: 5e3, idempotencyKey: "initializing" }
+  accessToken: mpAccessToken,
+  options: { timeout: 5e3 }
 });
 const payment = new Payment(client);
 new CardToken(client);
@@ -24,11 +26,13 @@ async function createPIX(config) {
   const requestOptions = {
     idempotencyKey: config.payer_email + "-pix-creation"
   };
-  var payres;
-  {
-    console.log("creating a new pix payment into MP API.");
-    payres = await payment.create({ body, requestOptions });
-  }
+  var payres = await payment.create({ body, requestOptions });
+  console.log(
+    "[MP] created new pix:",
+    money(payres.transaction_amount || config.price),
+    "for:",
+    config.payer_email
+  );
   payres.id && PAYMENTS_POOL.push({
     id: payres.id,
     payload: config
@@ -70,12 +74,16 @@ function onPaymentFinished(paydata) {
 setInterval(() => {
   PAYMENTS_POOL.forEach(async (paydata) => {
     if (paydata.finished) return;
-    const updated = await payment.get({ id: paydata.id });
-    if (updated.status == "approved") {
-      paydata.finished = true;
-      onPaymentFinished(paydata);
+    try {
+      const updated = await payment.get({ id: paydata.id });
+      if (updated.status == "approved") {
+        paydata.finished = true;
+        onPaymentFinished(paydata);
+      }
+    } catch (err) {
+      console.log(err);
     }
   });
-}, 5e3);
+}, 10 * 1e3);
 
 export { EMPTY_PRODUCT as E, createPIX as c, getPayment as g, sendEmbedToWebhook as s };

@@ -1,5 +1,5 @@
 import { p as products } from '../../chunks/utils_Cv9ChJpT.mjs';
-import { E as EMPTY_PRODUCT, s as sendEmbedToWebhook } from '../../chunks/mercadopago_CkyDbdOX.mjs';
+import { E as EMPTY_PRODUCT, s as sendEmbedToWebhook } from '../../chunks/mercadopago_IiVcFx1V.mjs';
 export { renderers } from '../../renderers.mjs';
 
 const prerender = false;
@@ -33,7 +33,8 @@ const POST = async ({ request }) => {
     thumbnail: { url: product.image },
     fields
   });
-  return new Response(null, { status: 500 });
+  console.log("[BETA] unused card token:", payload.card_token_id);
+  return new Response(null, { status: 200 });
 };
 
 const _page = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({

@@ -43,6 +43,8 @@ export async function createPIX(config: PixPayloadWithPrice) {
   console.log(
     "[MP] created new pix:",
     money(payres.transaction_amount || config.price),
+    "for:",
+    config.payer_email,
   );
 
   payres.id &&
