@@ -44,6 +44,7 @@ type CreateCardTokenResponse = (Expiration & WithCardHolder) & {
 interface PaymentOptions {
   transaction_amount: number;
   installments: number;
+  description?: string;
   payment_method_id?: "pix";
   token?: string;
   payer: {
@@ -51,11 +52,12 @@ interface PaymentOptions {
   };
 }
 
-interface CreatePaymentResponse {
+export interface Payment {
   id: number;
+  payment_method_id: string;
   status: "pending" | "approved" | "authorized" | "rejected";
-  point_of_interaction?: {
-    transaction_data?: {
+  point_of_interaction: {
+    transaction_data: {
       qr_code_base64: string;
       qr_code: string;
     };
@@ -84,7 +86,7 @@ export class MercadoPago {
     method: "GET" | "POST" | "DELETE";
     idempotencyKey?: string;
     path: string;
-    body: object;
+    body?: object;
   }) {
     const headers: HeadersInit = {
       "Content-Type": "application/json",
@@ -95,7 +97,7 @@ export class MercadoPago {
       headers["X-Idempotency-Key"] = options.idempotencyKey;
 
     const response = await fetch(ENDPOINT + options.path, {
-      body: JSON.stringify(options.body),
+      body: options.body && JSON.stringify(options.body),
       method: options.method,
       headers,
     });
@@ -105,7 +107,7 @@ export class MercadoPago {
 
   async createCardToken(
     card: CardInfos & WithCardHolder,
-    idempotencyKey?: string
+    idempotencyKey?: string,
   ) {
     return await this.fetch<CreateCardTokenResponse>({
       path: `/v1/card_tokens?public_key=${this.config.publicKey}`,
@@ -116,11 +118,18 @@ export class MercadoPago {
   }
 
   async createPayment(options: PaymentOptions, idempotencyKey: string) {
-    return await this.fetch<CreatePaymentResponse>({
+    return await this.fetch<Payment>({
       path: `/v1/payments`,
       method: "POST",
       body: options,
       idempotencyKey,
+    });
+  }
+
+  async fetchPayment(id: number) {
+    return await this.fetch<Payment>({
+      path: `/v1/payments/${id}`,
+      method: "GET",
     });
   }
 }

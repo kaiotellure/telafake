@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { writeFileSync } from "fs";
-import { MercadoPago } from ".";
+import { MercadoPago } from "./lib";
 
 const mp = new MercadoPago({
   accessToken: import.meta.env.SECRET_MP_TOKEN,

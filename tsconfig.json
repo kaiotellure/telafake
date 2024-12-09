@@ -3,6 +3,9 @@
   "include": [".astro/types.d.ts", "src/**/*"],
   "exclude": ["dist"],
   "compilerOptions": {
+    "paths": {
+      "@services": ["./src/services/"]
+    },
     "resolveJsonModule": true,
     "jsx": "react-jsx",
     "jsxImportSource": "react"

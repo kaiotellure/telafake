@@ -3,9 +3,7 @@ import type { PaymentResponse } from "mercadopago/dist/clients/payment/commonTyp
 import { useEffect, useRef, useState } from "react";
 import Confetti from "react-confetti";
 import Tab from "../components/Tab";
-import type { PostCreditPayload } from "../pages/api/credit";
-import type { PostPixPayload } from "../pages/api/pix";
-import type { Paydata } from "../services/mercadopago";
+import type { PostCreditPayload } from "../pages/api/card";
 import {
   IconBoleto,
   IconCard,
@@ -24,6 +22,7 @@ import {
   emailValidator,
   phoneValidator,
 } from "./validators";
+import type { Purchase } from "../services/mercadopago/purchase";
 
 interface CardViewProps {
   product: Product;
@@ -190,7 +189,7 @@ async function createCreditPayment(payload: PostCreditPayload) {
 
   console.log("generated card token:", token);
 
-  const response = await fetch("/api/credit", {
+  const response = await fetch("/api/card", {
     method: "POST",
     headers: {
       "content-type": "application/json",
@@ -279,7 +278,7 @@ export default function Checkout({ product }: CheckoutProps) {
   );
 }
 
-async function createPIXPayment(payload: PostPixPayload) {
+async function createPIXPayment(payload: Purchase["infos"]) {
   const response = await fetch("/api/pix", {
     method: "POST",
     headers: {
@@ -310,6 +309,7 @@ function PixScreen(props: PixScreenProps) {
     createPIXPayment({
       payer_name: props.infos.name,
       payer_email: props.infos.email,
+      payer_cpf: props.infos.cpf,
       product_id: props.product.id,
     }).then((response: PaymentResponse) => {
       setPixPayment({
@@ -427,7 +427,7 @@ function PixConfirmingScreen(props: PixScreenProps & { payment: PixPayment }) {
 
   async function checkPaymentStatus() {
     const response = await fetch("/api/pix?id=" + props.payment.id);
-    const result: Paydata = await response.json();
+    const result: Purchase = await response.json();
 
     if (result.finished) setFinished(true);
   }

