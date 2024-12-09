@@ -16,11 +16,11 @@ function TabOption({ name, selected, Icon, onClick }: TabOptionProps) {
     <div
       onClick={onClick}
       className={cn(
-        "relative w-full px-4 py-4 flex items-center justify-center",
-        "cursor-pointer hover:border shadow rounded border",
+        "relative flex w-full items-center justify-center px-4 py-4",
+        "cursor-pointer rounded border shadow hover:border",
         "border-zinc-200 hover:border-black",
 
-        selected && "border-blue-500 hover:border-blue-500 text-blue-500"
+        selected && "border-blue-500 text-blue-500 hover:border-blue-500",
       )}
     >
       <Icon />

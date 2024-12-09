@@ -1,9 +1,9 @@
 import type { APIRoute } from "astro";
 import products from "../../assets/products.json";
-
+import { sendEmbedToWebhook } from "../../services/discordwebhook";
 import { EMPTY_PRODUCT } from "../../services/mercadopago";
 
-import { sendEmbedToWebhook } from "../../services/discordwebhook";
+export const prerender = false;
 
 export interface PostCreditPayload {
   product_id: string;

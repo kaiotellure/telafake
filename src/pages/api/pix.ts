@@ -1,7 +1,8 @@
 import type { APIRoute } from "astro";
 import products from "../../assets/products.json";
-
 import { createPIX, getPayment } from "../../services/mercadopago";
+
+export const prerender = false;
 
 export interface PostPixPayload {
   product_id: string;
@@ -16,9 +17,10 @@ export const POST: APIRoute = async ({ request }) => {
   if (!product) return new Response("product not found", { status: 400 });
 
   const payment = await createPIX({
-    ...payload, price: product.price
+    ...payload,
+    price: product.price,
   });
-  
+
   return new Response(JSON.stringify(payment));
 };
 
