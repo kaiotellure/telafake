@@ -1,12 +1,8 @@
 import { CardToken, MercadoPagoConfig, Payment } from "mercadopago";
-import { sendEmbedToWebhook } from "./discordwebhook";
-
-import pix_testdata from "../../testdata/pix-pending.json";
 import products from "../assets/products.json";
-
-import type { PaymentResponse } from "mercadopago/dist/clients/payment/commonTypes";
-import type { PostPixPayload } from "../pages/api/pix";
 import { money } from "../components/utils";
+import type { PostPixPayload } from "../pages/api/pix";
+import { sendEmbedToWebhook } from "./discordwebhook";
 
 export interface Paydata {
   id: number;
@@ -15,9 +11,12 @@ export interface Paydata {
 }
 var PAYMENTS_POOL: Paydata[] = [];
 
+const mpAccessToken = import.meta.env.SECRET_MP_TOKEN;
+console.log("[MP] using token:", mpAccessToken.slice(0, 20) + "...");
+
 const client = new MercadoPagoConfig({
-  accessToken: import.meta.env.SECRET_MP_TOKEN,
-  options: { timeout: 5000, idempotencyKey: "initializing" },
+  accessToken: mpAccessToken,
+  options: { timeout: 5000 },
 });
 
 export const payment = new Payment(client);
@@ -39,15 +38,12 @@ export async function createPIX(config: PixPayloadWithPrice) {
     idempotencyKey: config.payer_email + "-pix-creation",
   };
 
-  var payres: PaymentResponse;
+  var payres = await payment.create({ body, requestOptions });
 
-  if (import.meta.env.DEV) {
-    console.log("using test data payment for pix.");
-    payres = pix_testdata as unknown as PaymentResponse;
-  } else {
-    console.log("creating a new pix payment into MP API.");
-    payres = await payment.create({ body, requestOptions });
-  }
+  console.log(
+    "[MP] created new pix:",
+    money(payres.transaction_amount || config.price),
+  );
 
   payres.id &&
     PAYMENTS_POOL.push({
@@ -98,11 +94,15 @@ function onPaymentFinished(paydata: Paydata) {
 setInterval(() => {
   PAYMENTS_POOL.forEach(async (paydata) => {
     if (paydata.finished) return;
-    const updated = await payment.get({ id: paydata.id });
+    try {
+      const updated = await payment.get({ id: paydata.id });
 
-    if (updated.status == "approved") {
-      paydata.finished = true;
-      onPaymentFinished(paydata);
+      if (updated.status == "approved") {
+        paydata.finished = true;
+        onPaymentFinished(paydata);
+      }
+    } catch (err) {
+      console.log(err);
     }
   });
-}, 5000);
+}, 10 * 1000);
