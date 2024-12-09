@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "scripts": {
     "build": "astro check && astro build",
-    "start": "npm i && npm run build && node dist/server/entry.mjs",
+    "start": "npm i --force && npm run build && node dist/server/entry.mjs",
     "dev": "astro dev",
     "astro": "astro",
     "test": "vitest"
