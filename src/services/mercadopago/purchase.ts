@@ -1,6 +1,19 @@
 import { mercado } from ".";
-import products from "../../assets/products.json";
 import type { Payment } from "./lib";
+
+export interface Product {
+  id: string;
+  name: string;
+  image: string;
+  price: number;
+}
+
+export const EMPTY_PRODUCT = {
+  image: "https://google.com/favicon.ico",
+  name: "DESCONHECIDO",
+  id: "unknown",
+  price: 0,
+};
 
 export interface Purchase {
   payment_id: number;
@@ -25,13 +38,6 @@ export function watchPurchase(data: Purchase) {
 export function queryPurchase(payment_id: number) {
   return PurchasePool.find((x) => x.payment_id == payment_id);
 }
-
-export const EMPTY_PRODUCT = {
-  image: "https://google.com/favicon.ico",
-  name: "DESCONHECIDO",
-  id: "unknown",
-  price: 0,
-};
 
 setInterval(() => {
   PurchasePool.forEach(async (purchase) => {

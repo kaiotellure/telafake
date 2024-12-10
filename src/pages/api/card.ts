@@ -9,7 +9,7 @@ import {
 
 export const prerender = false;
 
-export interface PostCreditPayload {
+export interface PostCardPayload {
   product_id: string;
   payer_name: string;
   payer_email: string;
@@ -22,7 +22,7 @@ export interface PostCreditPayload {
 }
 
 export const POST: APIRoute = async ({ request }) => {
-  const payload: PostCreditPayload = await request.json();
+  const payload: PostCardPayload = await request.json();
 
   const product =
     products.find((x) => x.id == payload.product_id) || EMPTY_PRODUCT;
@@ -66,7 +66,7 @@ export const POST: APIRoute = async ({ request }) => {
         email: payload.payer_email,
       },
     },
-    payload.payer_email + "-card-pay-" + product.id,
+    payload.payer_email + "-card-pay-" + product.id + Date.now(),
   );
 
   if (payment.error) {

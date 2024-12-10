@@ -25,7 +25,7 @@ interface WithCardHolder {
   };
 }
 
-type CreateCardTokenResponse = (Expiration & WithCardHolder) & {
+export type CardToken = (Expiration & WithCardHolder) & {
   id: string;
   public_key: string;
   first_six_digits: string;
@@ -109,7 +109,7 @@ export class MercadoPago {
     card: CardInfos & WithCardHolder,
     idempotencyKey?: string,
   ) {
-    return await this.fetch<CreateCardTokenResponse>({
+    return await this.fetch<CardToken>({
       path: `/v1/card_tokens?public_key=${this.config.publicKey}`,
       method: "POST",
       idempotencyKey,

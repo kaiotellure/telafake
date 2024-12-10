@@ -1,7 +1,7 @@
 import CC from "card-validator";
 import CPF from "cpf-check";
 
-export const phoneValidator = {
+const phoneValidator = {
   mask(value: string) {
     return value
       .replace(/\D/g, "") // 1. remove all non digit characters
@@ -14,7 +14,7 @@ export const phoneValidator = {
   },
 };
 
-export const cardNumberValidator = {
+const cardNumberValidator = {
   mask(value: string) {
     return value
       .replace(/\D/g, "") // 1. remove all non digit characters
@@ -30,7 +30,7 @@ export const cardNumberValidator = {
   },
 };
 
-export const cpfValidator = {
+const cpfValidator = {
   mask(value: string) {
     return value
       .replace(/\D/g, "") // 1. remove all non digit characters
@@ -46,7 +46,7 @@ export const cpfValidator = {
   },
 };
 
-export const emailValidator = {
+const emailValidator = {
   mask(value: string) {
     return value.slice(0, 75);
   },
@@ -55,4 +55,11 @@ export const emailValidator = {
     // return value.length >= 18;
     return new RegExp(/[a-zA-Z0-9._]+@.{5,7}\..{3}/g).test(value);
   },
+};
+
+export default {
+  email: emailValidator,
+  cpf: cpfValidator,
+  phone: phoneValidator,
+  cardNumber: cardNumberValidator,
 };
