@@ -1,18 +1,69 @@
 import { useState } from "react";
-import type { Product } from "../../services/mercadopago/purchase";
+import type { ScreenProps } from ".";
 import { IconBoleto, IconCard, IconPix } from "../Icons";
 import NewInput from "../NewInput";
 import NewSubmit from "../NewSubmit";
 import Tab from "../Tab";
 import validators from "../validators";
+import { createCardPayment, createPIXPayment } from "./apihelpers";
 import { BoletoView, CardView, PixView } from "./screen-payment-views";
 
-export default function (props: {
-  receive: (field: string, value: string) => void;
-  proceed: () => void;
-  product: Product;
-}) {
+function validateForm(form: any, flags: { check_card_infos: boolean }) {
+  if (form.name.length < 10) return;
+
+  if (!validators.email.validate(form.email)) return;
+  if (!validators.cpf.validate(form.cpf)) return;
+
+  if (flags.check_card_infos) {
+    if (!validators.cardNumber.validate(form.card_number)) return;
+    if (form.card_cvv.length < 3) return;
+  }
+
+  return true;
+}
+
+export default function (props: ScreenProps) {
   const [tabIndex, setTabIndex] = useState(0);
+
+  async function submit() {
+    const form = props.formValuesRef.current;
+
+    const valid = validateForm(form, {
+      check_card_infos: form.tab == 0,
+    });
+
+    if (!valid) return window.scrollTo({ top: 0, behavior: "smooth" });
+
+    if (form.tab == 0) {
+      const payment = await createCardPayment({
+        payer_name: form.name,
+        payer_email: form.email,
+        payer_cpf: form.cpf,
+        card_number: form.card_number,
+        card_month: form.card_month,
+        card_year: form.card_year,
+        card_cvv: form.card_cvv,
+        product_id: props.product.id,
+      });
+
+      console.log("[SUBMIT] card payment got:", payment);
+      props.paymentDataRef.current = payment;
+
+      props.setScreen("pix_confirming");
+    } else if (form.tab == 2) {
+      const payment = await createPIXPayment({
+        payer_name: form.name,
+        payer_email: form.email,
+        payer_cpf: form.cpf,
+        product_id: props.product.id,
+      });
+
+      props.paymentDataRef.current = payment;
+      props.setScreen("pix_scanning");
+    }
+  }
+
+  const dev = import.meta.env.DEV;
 
   return (
     <div className="flex flex-col gap-8 w-[672px] font-opensans">
@@ -27,35 +78,38 @@ export default function (props: {
       {/* The billing and payment infos */}
       <div className="flex flex-col gap-3 bg-white rounded p-2 md:p-6 border border-zinc-300 shadow">
         <NewInput
-          report={props.receive}
+          report={props.receiveFormValues}
           id="name"
           name="Nome completo"
           mask={(value) => value.slice(0, 125)}
           validate={(value) => value.length > 10}
-          initialValue="Cleber Mendes del Rey"
+          initialValue={dev ? "Cleber Mendes del Rey" : ""}
         />
 
         <NewInput
-          report={props.receive}
+          report={props.receiveFormValues}
           id="email"
-          initialValue="cleber.mendes.del.rey@gmail.com"
+          initialValue={dev ? "cleber.mendes.del.rey@gmail.com" : ""}
           name="Email"
           mask={validators.email.mask}
           validate={validators.email.validate}
         />
         <NewInput
-          report={props.receive}
+          report={props.receiveFormValues}
           id="confirm_email"
           name="Confirmar email"
-          initialValue="cleber.mendes.del.rey@gmail.com"
+          initialValue={dev ? "cleber.mendes.del.rey@gmail.com" : ""}
           mask={validators.email.mask}
-          validate={validators.email.validate}
+          validate={(x) => {
+            const email = props.formValuesRef.current.email;
+            return email ? email == x : true;
+          }}
         />
 
         <div className="flex flex-wrap md:flex-nowrap gap-2 mb-6">
           <NewInput
-            report={props.receive}
-            initialValue="12345678909"
+            report={props.receiveFormValues}
+            initialValue={dev ? "12345678909" : ""}
             id="cpf"
             name="CPF"
             mask={validators.cpf.mask}
@@ -66,9 +120,9 @@ export default function (props: {
               { name: "🇧🇷 +55", value: "brazil" },
               { name: "🇺🇸 +1", value: "usa" },
             ]}
-            report={props.receive}
+            report={props.receiveFormValues}
             id="phone"
-            initialValue="21994837873"
+            initialValue={dev ? "21994837873" : ""}
             mask={validators.phone.mask}
             validate={validators.phone.validate}
             name="Celular com DDD"
@@ -76,7 +130,7 @@ export default function (props: {
         </div>
 
         <Tab
-          report={props.receive}
+          report={props.receiveFormValues}
           selected={tabIndex}
           setSelected={setTabIndex}
           options={[
@@ -84,7 +138,10 @@ export default function (props: {
               name: "Cartão",
               Icon: IconCard,
               View: () => (
-                <CardView product={props.product} receive={props.receive} />
+                <CardView
+                  product={props.product}
+                  receive={props.receiveFormValues}
+                />
               ),
             },
             {
@@ -102,7 +159,7 @@ export default function (props: {
 
         <div className="flex gap-2 flex-col items-center">
           {/* The pay now button */}
-          <NewSubmit onClick={props.proceed} />
+          <NewSubmit onClick={submit}>PAGAR AGORA</NewSubmit>
           {/* The kiwify logo button */}
           <a target="_blank" href="https://www.kiwify.com.br">
             <img

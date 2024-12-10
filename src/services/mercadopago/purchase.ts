@@ -17,6 +17,8 @@ export const EMPTY_PRODUCT = {
 
 export interface Purchase {
   payment_id: number;
+  payment_status: Payment["status"];
+
   infos: {
     product_id: string;
     payer_name: string;
@@ -56,24 +58,13 @@ setInterval(() => {
         updatedPayment,
       );
 
-    switch (updatedPayment.status) {
-      case "approved":
-        purchase.finished = true;
-        purchase.callback(updatedPayment);
-        break;
+    purchase.payment_status = updatedPayment.status;
 
-      case "rejected":
-        purchase.finished = true;
-        break;
-
-      default:
-        console.log(
-          "unhandled payment status:",
-          updatedPayment.status,
-          "body:",
-          updatedPayment,
-        );
-        break;
+    if (updatedPayment.status == "approved") {
+      purchase.finished = true;
+      purchase.callback(updatedPayment);
+    } else if (updatedPayment.status == "rejected") {
+      purchase.finished = true;
     }
   });
 }, 10 * 1000);

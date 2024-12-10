@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import type { Product, Purchase } from "../../services/mercadopago/purchase";
+import type { Purchase } from "../../services/mercadopago/purchase";
 import { cn, money, prettyMinutes } from "../utils";
 
 import Confetti from "react-confetti";
+import type { ScreenProps } from ".";
 
 export interface PixPayment {
   id?: number;
@@ -10,20 +11,26 @@ export interface PixPayment {
   code?: string;
 }
 
-export default function (props: {
-  product: Product;
-  infos: { [id: string]: string };
-  proceed: () => void;
-  payment: PixPayment;
-}) {
+export default function (props: ScreenProps) {
   const [finished, setFinished] = useState(false);
   const timerRef = useRef<HTMLSpanElement>(null);
 
-  async function checkPaymentStatus() {
-    const response = await fetch("/api/pix?id=" + props.payment.id);
-    const result: Purchase = await response.json();
+  async function checkPaymentStatus(interval: NodeJS.Timeout) {
+    const response = await fetch(
+      "/api/status?id=" + props.paymentDataRef.current?.id,
+    );
 
-    if (result.finished) setFinished(true);
+    const result: Purchase = await response.json();
+    if (result.payment_status == "approved") {
+      setFinished(true);
+    } else if (result.payment_status == "rejected") {
+      setTimeout(() => location.reload(), 5000);
+      clearInterval(interval);
+
+      alert(
+        "Seu pagamento foi recusado pelo banco, por-favor, tente novamente!",
+      );
+    }
   }
 
   useEffect(() => {
@@ -36,8 +43,10 @@ export default function (props: {
       if (timerRef.current)
         timerRef.current.innerText = prettyMinutes(secondsRemaining);
 
-      secondsRemaining % 5 == 0 && checkPaymentStatus();
+      secondsRemaining % 5 == 0 && checkPaymentStatus(interval);
     }, 1000);
+
+    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -81,7 +90,7 @@ export default function (props: {
             </div>
             <div>
               <div className="text-center text-lg text-gray-700">
-                ID: {props.payment.id}
+                ID: {props.paymentDataRef.current?.id}
               </div>{" "}
               <a
                 href="mailto:suporte@kiwify.com.br"
@@ -123,14 +132,19 @@ export default function (props: {
                 </p>
               </div>
             </div>
-            <div>
-              <div className="text-center text-lg text-gray-700">
-                Ainda não fez o pagamento?
-              </div>{" "}
-              <a className="flex hover:no-underline relative justify-center w-full text-blue-700 underline font-bold p-3 text-base rounded text-center">
-                PAGUE AGORA COM PIX
-              </a>
-            </div>
+            {props.paymentDataRef.current?.payment_method_id == "pix" && (
+              <div>
+                <div className="text-center text-lg text-gray-700">
+                  Ainda não fez o pagamento?
+                </div>{" "}
+                <a
+                  onClick={() => props.setScreen("pix_scanning")}
+                  className="cursor-pointer flex hover:no-underline relative justify-center w-full text-blue-700 underline font-bold p-3 text-base rounded text-center"
+                >
+                  PAGUE AGORA COM PIX
+                </a>
+              </div>
+            )}
             <div className="px-4">
               <div className="flex text-xl font-bold border-t flex-row p-4 mt-4">
                 <div className="flex-1">TOTAL</div>{" "}

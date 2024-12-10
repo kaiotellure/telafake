@@ -1,5 +1,7 @@
-import { p as products } from '../../chunks/utils_Cv9ChJpT.mjs';
-import { c as createPIX, g as getPayment } from '../../chunks/mercadopago_IiVcFx1V.mjs';
+import { p as products } from '../../chunks/products_BQsGa0Z_.mjs';
+import { m as money } from '../../chunks/utils_CCIxlDDw.mjs';
+import { s as sendEmbedToWebhook } from '../../chunks/discordwebhook_BjaVtYvQ.mjs';
+import { m as mercado, w as watchPurchase } from '../../chunks/purchase_0Mua9WCJ.mjs';
 export { renderers } from '../../renderers.mjs';
 
 const prerender = false;
@@ -7,23 +9,58 @@ const POST = async ({ request }) => {
   const payload = await request.json();
   const product = products.find((x) => x.id == payload.product_id);
   if (!product) return new Response("product not found", { status: 400 });
-  const payment = await createPIX({
-    ...payload,
-    price: product.price
+  const payment = await mercado.createPayment(
+    {
+      description: `compra de ${product.name}`,
+      transaction_amount: product.price,
+      payment_method_id: "pix",
+      installments: 1,
+      payer: {
+        email: payload.payer_email
+      }
+    },
+    payload.payer_email + "-pix-pay-" + product.id
+  );
+  if (payment.error) {
+    console.log("[MP] error creating pix:", payment);
+    return new Response(JSON.stringify(payment), { status: 400 });
+  }
+  console.log(
+    "[MP] created new pix:",
+    money(product.price),
+    "for:",
+    payload.payer_email
+  );
+  watchPurchase({
+    payment_id: payment.id,
+    payment_status: payment.status,
+    infos: payload,
+    callback() {
+      sendEmbedToWebhook("https://discord.com/api/webhooks/1314688649874374778/_Mrgy4E8OAE9MCFx8NDWRQHhGKnX3fKyMSNKX9bsmDmekU0dcBd6szJCXGp4J9WbpcpY", {
+        title: `💸 ${money(product.price)} via Tranferência PIX`,
+        description: `do produto: **${product.name}**`,
+        fields: [
+          {
+            name: "✍️ Nome do pagador",
+            value: payload.payer_name,
+            inline: true
+          },
+          {
+            name: "🪪 CPF do pagador",
+            value: payload.payer_cpf,
+            inline: true
+          }
+        ],
+        footer: { text: payload.payer_email },
+        thumbnail: { url: product.image }
+      });
+    }
   });
-  return new Response(JSON.stringify(payment));
-};
-const GET = async ({ url }) => {
-  const uri = new URL(url);
-  const id = uri.searchParams.get("id");
-  if (!id) return new Response("missing query param: id", { status: 400 });
-  const payment = await getPayment(id);
   return new Response(JSON.stringify(payment));
 };
 
 const _page = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  GET,
   POST,
   prerender
 }, Symbol.toStringTag, { value: 'Module' }));

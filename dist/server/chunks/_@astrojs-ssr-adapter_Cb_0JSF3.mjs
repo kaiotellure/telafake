@@ -1,14 +1,12 @@
+import { Http2ServerResponse } from 'node:http2';
 import { R as ROUTE_TYPE_HEADER, h as REROUTE_DIRECTIVE_HEADER, i as decryptString, j as createSlotValueFromString, r as renderTemplate, f as renderComponent, D as DEFAULT_404_COMPONENT, k as renderSlotToString, l as renderJSX, n as chunkToString, o as isRenderInstruction, p as originPathnameSymbol, q as clientLocalsSymbol, t as clientAddressSymbol, A as ASTRO_VERSION, u as responseSentSymbol$1, v as renderPage, w as REWRITE_DIRECTIVE_HEADER_KEY, x as REWRITE_DIRECTIVE_HEADER_VALUE, y as renderEndpoint, z as REROUTABLE_STATUS_CODES } from './astro/server_C_TVTMNH.mjs';
 import { appendForwardSlash as appendForwardSlash$1, joinPaths, trimSlashes, removeTrailingForwardSlash, fileExtension, slash, prependForwardSlash as prependForwardSlash$1 } from '@astrojs/internal-helpers/path';
+import { A as AstroError, p as i18nNoLocaleFoundInPath, R as ResponseSentError, q as MiddlewareNoDataOrNextCalled, s as MiddlewareNotAResponse, G as GetStaticPathsRequired, t as InvalidGetStaticPathsReturn, u as InvalidGetStaticPathsEntry, v as GetStaticPathsExpectedParams, w as GetStaticPathsInvalidRouteParam, P as PageNumberParamNotFound, x as NoMatchingStaticPathFound, y as PrerenderDynamicEndpointPathCollide, z as ReservedSlotName, B as RewriteWithBodyUsed, L as LocalsNotAnObject, C as PrerenderClientAddressNotAvailable, H as ClientAddressNotAvailable, S as StaticClientAddressNotAvailable, J as AstroResponseHeadersReassigned } from './astro/assets-service_g6DNmJna.mjs';
 import { serialize, parse } from 'cookie';
 import { bold, red, yellow, dim, blue } from 'kleur/colors';
 import { g as getActionQueryString, d as deserializeActionResult, e as ensure404Route, a as default404Instance, D as DEFAULT_404_ROUTE, N as NOOP_MIDDLEWARE_FN } from './astro-designed-error-pages_CYv8aur-.mjs';
 import 'es-module-lexer';
 import 'clsx';
-import buffer from 'node:buffer';
-import crypto from 'node:crypto';
-import { Http2ServerResponse } from 'node:http2';
-import { A as AstroError, p as i18nNoLocaleFoundInPath, R as ResponseSentError, q as MiddlewareNoDataOrNextCalled, s as MiddlewareNotAResponse, G as GetStaticPathsRequired, t as InvalidGetStaticPathsReturn, u as InvalidGetStaticPathsEntry, v as GetStaticPathsExpectedParams, w as GetStaticPathsInvalidRouteParam, P as PageNumberParamNotFound, x as NoMatchingStaticPathFound, y as PrerenderDynamicEndpointPathCollide, z as ReservedSlotName, B as RewriteWithBodyUsed, L as LocalsNotAnObject, C as PrerenderClientAddressNotAvailable, H as ClientAddressNotAvailable, S as StaticClientAddressNotAvailable, J as AstroResponseHeadersReassigned } from './astro/assets-service_g6DNmJna.mjs';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import fs from 'node:fs';
 import http from 'node:http';
@@ -18,6 +16,8 @@ import os from 'node:os';
 import path from 'node:path';
 import url from 'node:url';
 import send from 'send';
+import buffer from 'node:buffer';
+import crypto from 'node:crypto';
 
 function shouldAppendForwardSlash(trailingSlash, buildFormat) {
   switch (trailingSlash) {
@@ -2679,8 +2679,6 @@ function asyncIterableToBodyProps(iterable) {
   };
 }
 
-apply();
-
 /**
  * Creates a Node.js http listener for on-demand rendered pages, compatible with http.createServer and Connect middleware.
  * If the next callback is provided, it will be called if the request does not have a matching route.
@@ -2753,7 +2751,6 @@ function createMiddleware(app) {
                 // biome-ignore lint/style/noUselessElse: <explanation>
             }
             else {
-                // biome-ignore lint/complexity/useArrowFunction: <explanation>
                 throw error;
             }
         }
@@ -3037,7 +3034,13 @@ function createServer(listener, host, port) {
     };
 }
 
-// Keep at the top
+// This needs to run first because some internals depend on `crypto`
+apply();
+// Won't throw if the virtual module is not available because it's not supported in
+// the users's astro version or if astro:env is not enabled in the project
+await import('./astro/env-setup_Cr6XTFvb.mjs')
+    .then((mod) => mod.setGetEnv((key) => process.env[key]))
+    .catch(() => { });
 function createExports(manifest, options) {
     const app = new NodeApp(manifest);
     options.trailingSlash = manifest.trailingSlash;

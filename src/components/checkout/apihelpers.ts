@@ -1,5 +1,5 @@
 import type { PostCardPayload } from "../../pages/api/card";
-import type { CardToken } from "../../services/mercadopago/lib";
+import type { CardToken, Payment } from "../../services/mercadopago/lib";
 import type { Purchase } from "../../services/mercadopago/purchase";
 
 export async function createPIXPayment(payload: Purchase["infos"]) {
@@ -11,7 +11,7 @@ export async function createPIXPayment(payload: Purchase["infos"]) {
     body: JSON.stringify(payload),
   });
 
-  return response.json();
+  return (await response.json()) as Payment;
 }
 
 export async function createCardPayment(payload: PostCardPayload) {
@@ -41,5 +41,5 @@ export async function createCardPayment(payload: PostCardPayload) {
     }),
   });
 
-  return response.json();
+  return (await response.json()) as Payment;
 }

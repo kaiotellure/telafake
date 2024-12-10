@@ -4,7 +4,6 @@ import { money } from "../../components/utils";
 import { sendEmbedToWebhook } from "../../services/discordwebhook";
 import { mercado } from "../../services/mercadopago";
 import {
-  queryPurchase,
   watchPurchase,
   type Purchase,
 } from "../../services/mercadopago/purchase";
@@ -44,6 +43,7 @@ export const POST: APIRoute = async ({ request }) => {
 
   watchPurchase({
     payment_id: payment.id,
+    payment_status: payment.status,
     infos: payload,
     callback() {
       sendEmbedToWebhook(import.meta.env.SECRET_WEBHOOK_PIX, {
@@ -68,17 +68,4 @@ export const POST: APIRoute = async ({ request }) => {
   });
 
   return new Response(JSON.stringify(payment));
-};
-
-export const GET: APIRoute = async ({ url }) => {
-  const uri = new URL(url);
-
-  const id = uri.searchParams.get("id");
-  if (!id) return new Response("missing query param: id", { status: 400 });
-
-  const purchase = queryPurchase(parseInt(id));
-
-  return new Response(purchase && JSON.stringify(purchase), {
-    status: purchase ? 200 : 400,
-  });
 };

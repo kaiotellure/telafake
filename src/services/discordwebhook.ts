@@ -13,6 +13,9 @@ interface Embed {
 }
 
 export async function sendEmbedToWebhook(url: string, embed: Embed) {
+  // disable webhook notifications in dev mode
+  if (import.meta.env.DEV) return;
+
   if (!embed.timestamp) embed.timestamp = new Date().toISOString();
   if (!embed.color) embed.color = 16721020;
 

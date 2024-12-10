@@ -10,6 +10,7 @@ export function CardView(props: {
   receive: (field: string, value: string) => void;
 }) {
   const currentYear = new Date().getFullYear();
+  const dev = import.meta.env.DEV;
 
   return (
     <div>
@@ -21,7 +22,7 @@ export function CardView(props: {
           validate={validators.cardNumber.validate}
           name="Número de Cartão de Crédito"
           badge={<IconSecurity />}
-          initialValue="5031 4332 1540 6351"
+          initialValue={dev ? "5031 4332 1540 6351" : ""}
           badgeTooltip="Nós protegemos seus dados de pagamento usando encriptação para prover segurança no nível de bancos."
         />
 
@@ -30,7 +31,7 @@ export function CardView(props: {
             <NewSelect
               report={props.receive}
               id="card_month"
-              initialValue="11"
+              initialValue={dev ? "11" : ""}
               name="Mês"
               options={Array.from({ length: 12 }, (_, i) => ({
                 name: alwaysTwo(i + 1),
@@ -42,7 +43,7 @@ export function CardView(props: {
               report={props.receive}
               id="card_year"
               name="Ano"
-              initialValue="2025"
+              initialValue={dev ? "2025" : ""}
               options={Array.from({ length: 12 }, (_, i) => ({
                 name: currentYear + i,
                 value: currentYear + i,
@@ -56,7 +57,7 @@ export function CardView(props: {
             mask={(value) => value.slice(0, 4).replace(/\D/g, "")}
             validate={(value) => value.length > 2}
             name="Cód. segurança"
-            initialValue="123"
+            initialValue={dev ? "123" : ""}
             badge={<IconDoubt />}
             badgeTooltip="O CVV/Cód. segurança é o código de 3 ou 4 dígitos que aparece atrás do seu cartão"
           />
@@ -94,12 +95,12 @@ export function CardView(props: {
       </div>
 
       <div className="mt-2 p-2 flex flex-col gap-4">
-        <div className="flex gap-2 items-center mx-[2.5px]">
+        <div className="brightness-150 flex gap-2 items-center mx-[2.5px]">
           <input checked readOnly type="checkbox" />
           <span className="text-sm">Salvar dados para as próximas compras</span>
         </div>
         <div className="flex gap-2 items-center text-gray-500">
-          <IconSecurity />
+          <IconSecurity className="w-[20px] h-[20px]" />
           <span className="text-xs">
             Nós protegemos seus dados de pagamento usando encriptação para
             prover segurança no nível de bancos.

@@ -3,11 +3,12 @@ import { c as createComponent, r as renderTemplate, d as renderSlot, e as render
 import 'kleur/colors';
 import 'clsx';
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
-import { useEffect, useState, useMemo, useRef } from 'react';
-import Confetti from 'react-confetti';
-import { c as cn, m as money, p as products } from '../chunks/utils_Cv9ChJpT.mjs';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import { c as cn, a as alwaysTwo, b as applyTax, m as money, p as prettyMinutes } from '../chunks/utils_CCIxlDDw.mjs';
 import CC from 'card-validator';
 import CPF from 'cpf-check';
+import Confetti from 'react-confetti';
+import { p as products } from '../chunks/products_BQsGa0Z_.mjs';
 export { renderers } from '../renderers.mjs';
 
 const $$CenteredLayout = createComponent(($$result, $$props, $$slots) => {
@@ -235,44 +236,36 @@ function IconError({ className }) {
     }
   );
 }
-
-function TabOption({ name, selected, Icon, onClick }) {
+function Spinner(props) {
   return /* @__PURE__ */ jsxs(
-    "div",
+    "svg",
     {
-      onClick,
+      "aria-hidden": "true",
       className: cn(
-        "relative flex w-full items-center justify-center px-4 py-4",
-        "cursor-pointer rounded border shadow hover:border",
-        "border-zinc-200 hover:border-black",
-        selected && "border-blue-500 text-blue-500 hover:border-blue-500"
+        "w-4 h-4 text-zinc-300 animate-spin fill-white",
+        props.className
       ),
+      viewBox: "0 0 100 101",
+      fill: "none",
+      xmlns: "http://www.w3.org/2000/svg",
       children: [
-        /* @__PURE__ */ jsx(Icon, {}),
-        selected && /* @__PURE__ */ jsx(BadgeCorrect, {}),
-        /* @__PURE__ */ jsx("span", { className: "leading-none", children: name })
+        /* @__PURE__ */ jsx(
+          "path",
+          {
+            d: "M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z",
+            fill: "currentColor"
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          "path",
+          {
+            d: "M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z",
+            fill: "currentFill"
+          }
+        )
       ]
     }
   );
-}
-function Tab(props) {
-  const current = props.options[props.selected];
-  useEffect(() => props.report("tab", props.selected), []);
-  return /* @__PURE__ */ jsxs("div", { className: "w-full", children: [
-    /* @__PURE__ */ jsx("div", { className: "flex gap-2", children: props.options.map((option, i) => /* @__PURE__ */ jsx(
-      TabOption,
-      {
-        ...option,
-        onClick: () => {
-          props.setSelected(i);
-          props.report("tab", i);
-        },
-        selected: props.selected == i
-      },
-      option.name
-    )) }),
-    /* @__PURE__ */ jsx("div", { className: "mt-4", children: /* @__PURE__ */ jsx(current.View, {}) })
-  ] });
 }
 
 function NewInput(props) {
@@ -375,6 +368,139 @@ function NewInput(props) {
   );
 }
 
+function NewSubmit(props) {
+  const [loading, setLoading] = useState(false);
+  return /* @__PURE__ */ jsx(
+    "button",
+    {
+      onClick: async () => {
+        setLoading(true);
+        await props.onClick();
+        setLoading(false);
+      },
+      className: cn(
+        "flex justify-center items-center",
+        "w-full rounded bg-[#46c900] p-4 text-white text-lg font-semibold hover:opacity-75",
+        loading && "cursor-not-allowed pointer-events-none opacity-75"
+      ),
+      children: loading ? /* @__PURE__ */ jsx(Spinner, { className: "text-green-300" }) : props.children
+    }
+  );
+}
+
+function TabOption({ name, selected, Icon, onClick }) {
+  return /* @__PURE__ */ jsxs(
+    "div",
+    {
+      onClick,
+      className: cn(
+        "relative flex w-full items-center justify-center px-4 py-4",
+        "cursor-pointer rounded border shadow hover:border",
+        "border-zinc-200 hover:border-black",
+        selected && "border-blue-500 text-blue-500 hover:border-blue-500"
+      ),
+      children: [
+        /* @__PURE__ */ jsx(Icon, {}),
+        selected && /* @__PURE__ */ jsx(BadgeCorrect, {}),
+        /* @__PURE__ */ jsx("span", { className: "leading-none", children: name })
+      ]
+    }
+  );
+}
+function Tab(props) {
+  const current = props.options[props.selected];
+  useEffect(() => props.report("tab", props.selected), []);
+  return /* @__PURE__ */ jsxs("div", { className: "w-full", children: [
+    /* @__PURE__ */ jsx("div", { className: "flex gap-2", children: props.options.map((option, i) => /* @__PURE__ */ jsx(
+      TabOption,
+      {
+        ...option,
+        onClick: () => {
+          props.setSelected(i);
+          props.report("tab", i);
+        },
+        selected: props.selected == i
+      },
+      option.name
+    )) }),
+    /* @__PURE__ */ jsx("div", { className: "mt-4", children: /* @__PURE__ */ jsx(current.View, {}) })
+  ] });
+}
+
+const phoneValidator = {
+  mask(value) {
+    return value.replace(/\D/g, "").replace(/(\d{2})(\d)/, "($1) $2").replace(/(\d{5})(\d)/, "$1-$2").replace(/(.{15})(.)/, "$1");
+  },
+  validate(value) {
+    return value.length == 15;
+  }
+};
+const cardNumberValidator = {
+  mask(value) {
+    return value.replace(/\D/g, "").replace(/(\d{4})(\d)/, "$1 $2").replace(/(\d{4})(\d)/, "$1 $2").replace(/(\d{4})(\d)/, "$1 $2").replace(/(.{19})(.)/, "$1");
+  },
+  validate(value) {
+    return CC.number(value).isValid;
+  }
+};
+const cpfValidator = {
+  mask(value) {
+    return value.replace(/\D/g, "").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1-$2").replace(/(.{14})(.)/, "$1");
+  },
+  validate(value) {
+    return CPF.validate(value);
+  }
+};
+const emailValidator = {
+  mask(value) {
+    return value.slice(0, 75);
+  },
+  validate(value) {
+    return new RegExp(/[a-zA-Z0-9._]+@.{5,7}\..{3}/g).test(value);
+  }
+};
+const validators = {
+  email: emailValidator,
+  cpf: cpfValidator,
+  phone: phoneValidator,
+  cardNumber: cardNumberValidator
+};
+
+async function createPIXPayment(payload) {
+  const response = await fetch("/api/pix", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+  return await response.json();
+}
+async function createCardPayment(payload) {
+  const MP = new MercadoPago("TEST-3ad4df97-7039-4672-bc05-dbab6c804b79");
+  const token = await MP.createCardToken({
+    cardNumber: payload.card_number.replace(/\D/g, ""),
+    cardholderName: payload.payer_name,
+    cardExpirationMonth: payload.card_month,
+    cardExpirationYear: payload.card_year,
+    securityCode: payload.card_cvv,
+    identificationType: "CPF",
+    identificationNumber: payload.payer_cpf.replace(/\D/g, "")
+  });
+  console.log("generated card token:", token);
+  const response = await fetch("/api/card", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json"
+    },
+    body: JSON.stringify({
+      ...payload,
+      card_token_id: token.id
+    })
+  });
+  return await response.json();
+}
+
 function NewSelect(props) {
   const [focused, setFocused] = useState(false);
   const [selectValue, setSelectValue] = useState(props.initialValue || "");
@@ -449,53 +575,20 @@ function NewSelect(props) {
   );
 }
 
-const phoneValidator = {
-  mask(value) {
-    return value.replace(/\D/g, "").replace(/(\d{2})(\d)/, "($1) $2").replace(/(\d{5})(\d)/, "$1-$2").replace(/(.{15})(.)/, "$1");
-  },
-  validate(value) {
-    return value.length == 15;
-  }
-};
-const cardNumberValidator = {
-  mask(value) {
-    return value.replace(/\D/g, "").replace(/(\d{4})(\d)/, "$1 $2").replace(/(\d{4})(\d)/, "$1 $2").replace(/(\d{4})(\d)/, "$1 $2").replace(/(.{19})(.)/, "$1");
-  },
-  validate(value) {
-    return CC.number(value).isValid;
-  }
-};
-const cpfValidator = {
-  mask(value) {
-    return value.replace(/\D/g, "").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1-$2").replace(/(.{14})(.)/, "$1");
-  },
-  validate(value) {
-    return CPF.validate(value);
-  }
-};
-const emailValidator = {
-  mask(value) {
-    return value.slice(0, 75);
-  },
-  validate(value) {
-    return new RegExp(/[a-zA-Z0-9._]+@.{5,7}\..{3}/g).test(value);
-  }
-};
-
-function CardView({ receive, product }) {
+function CardView(props) {
   const currentYear = (/* @__PURE__ */ new Date()).getFullYear();
   return /* @__PURE__ */ jsxs("div", { children: [
     /* @__PURE__ */ jsxs("div", { className: "md:p-4 space-y-2 md:border md:rounded md:bg-zinc-50", children: [
       /* @__PURE__ */ jsx(
         NewInput,
         {
-          report: receive,
+          report: props.receive,
           id: "card_number",
-          mask: cardNumberValidator.mask,
-          validate: cardNumberValidator.validate,
+          mask: validators.cardNumber.mask,
+          validate: validators.cardNumber.validate,
           name: "Número de Cartão de Crédito",
           badge: /* @__PURE__ */ jsx(IconSecurity, {}),
-          initialValue: "379256003445765",
+          initialValue: "",
           badgeTooltip: "Nós protegemos seus dados de pagamento usando encriptação para prover segurança no nível de bancos."
         }
       ),
@@ -504,9 +597,9 @@ function CardView({ receive, product }) {
           /* @__PURE__ */ jsx(
             NewSelect,
             {
-              report: receive,
+              report: props.receive,
               id: "card_month",
-              initialValue: "03",
+              initialValue: "",
               name: "Mês",
               options: Array.from({ length: 12 }, (_, i) => ({
                 name: alwaysTwo(i + 1),
@@ -517,10 +610,10 @@ function CardView({ receive, product }) {
           /* @__PURE__ */ jsx(
             NewSelect,
             {
-              report: receive,
+              report: props.receive,
               id: "card_year",
               name: "Ano",
-              initialValue: "2029",
+              initialValue: "",
               options: Array.from({ length: 12 }, (_, i) => ({
                 name: currentYear + i,
                 value: currentYear + i
@@ -531,12 +624,12 @@ function CardView({ receive, product }) {
         /* @__PURE__ */ jsx(
           NewInput,
           {
-            report: receive,
+            report: props.receive,
             id: "card_cvv",
             mask: (value) => value.slice(0, 4).replace(/\D/g, ""),
             validate: (value) => value.length > 2,
             name: "Cód. segurança",
-            initialValue: "4321",
+            initialValue: "",
             badge: /* @__PURE__ */ jsx(IconDoubt, {}),
             badgeTooltip: "O CVV/Cód. segurança é o código de 3 ou 4 dígitos que aparece atrás do seu cartão"
           }
@@ -545,7 +638,7 @@ function CardView({ receive, product }) {
       /* @__PURE__ */ jsx(
         NewSelect,
         {
-          report: receive,
+          report: props.receive,
           id: "installments",
           name: "Parcelas",
           initialValue: 1,
@@ -553,11 +646,15 @@ function CardView({ receive, product }) {
             const times = 12 - i;
             if (times == 1) {
               return {
-                name: "R$" + product.price.toFixed(2).replace(".", ","),
+                name: "R$" + props.product.price.toFixed(2).replace(".", ","),
                 value: times
               };
             }
-            const installmentPrice = price(product.price, 2.9956 / 100, times).toFixed(2).replace(".", ",");
+            const installmentPrice = applyTax(
+              props.product.price,
+              2.9956 / 100,
+              times
+            ).toFixed(2).replace(".", ",");
             return {
               name: `${times}x de R$ ${installmentPrice}`,
               value: times
@@ -567,19 +664,16 @@ function CardView({ receive, product }) {
       )
     ] }),
     /* @__PURE__ */ jsxs("div", { className: "mt-2 p-2 flex flex-col gap-4", children: [
-      /* @__PURE__ */ jsxs("div", { className: "flex gap-2 items-center mx-[2.5px]", children: [
+      /* @__PURE__ */ jsxs("div", { className: "brightness-150 flex gap-2 items-center mx-[2.5px]", children: [
         /* @__PURE__ */ jsx("input", { checked: true, readOnly: true, type: "checkbox" }),
         /* @__PURE__ */ jsx("span", { className: "text-sm", children: "Salvar dados para as próximas compras" })
       ] }),
       /* @__PURE__ */ jsxs("div", { className: "flex gap-2 items-center text-gray-500", children: [
-        /* @__PURE__ */ jsx(IconSecurity, {}),
+        /* @__PURE__ */ jsx(IconSecurity, { className: "w-[20px] h-[20px]" }),
         /* @__PURE__ */ jsx("span", { className: "text-xs", children: "Nós protegemos seus dados de pagamento usando encriptação para prover segurança no nível de bancos." })
       ] })
     ] })
   ] });
-}
-function price(total, tax, slices) {
-  return total * tax / (1 - (1 + tax) ** -slices);
 }
 function BoletoView({ product }) {
   return /* @__PURE__ */ jsx("div", { className: "md:px-4 md:py-3 bg-zinc-50 md:rounded md:border", children: /* @__PURE__ */ jsxs("div", { className: "p-4 bg-zinc-100 rounded", children: [
@@ -610,110 +704,50 @@ function PixView({ product }) {
     ] })
   ] }) });
 }
-async function createCreditPayment(payload) {
-  const MP = new MercadoPago("TEST-3ad4df97-7039-4672-bc05-dbab6c804b79");
-  const token = await MP.createCardToken({
-    cardNumber: payload.card_number.replace(/\D/g, ""),
-    cardholderName: payload.payer_name,
-    cardExpirationMonth: payload.card_month,
-    cardExpirationYear: payload.card_year,
-    securityCode: payload.card_cvv,
-    identificationType: "CPF",
-    identificationNumber: payload.payer_cpf.replace(/\D/g, "")
-  });
-  console.log("generated card token:", token);
-  const response = await fetch("/api/credit", {
-    method: "POST",
-    headers: {
-      "content-type": "application/json"
-    },
-    body: JSON.stringify({
-      ...payload,
-      card_token_id: token.id
-    })
-  });
-  return response.json();
+
+function validateForm(form, flags) {
+  if (form.name.length < 10) return;
+  if (!validators.email.validate(form.email)) return;
+  if (!validators.cpf.validate(form.cpf)) return;
+  if (flags.check_card_infos) {
+    if (!validators.cardNumber.validate(form.card_number)) return;
+    if (form.card_cvv.length < 3) return;
+  }
+  return true;
 }
-function Checkout({ product }) {
-  const [screen, setScreen] = useState("checkout");
-  const values = useRef({});
-  const proceed = () => {
-    function error(msg) {
-      console.log(msg);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-    const form = values.current;
-    console.log("[INFO] pay now requested, form values:", values.current);
-    if (form.name.length < 10)
-      return error("[CHECK-FAILED] full name too short.");
-    if (!emailValidator.validate(form.email))
-      return error("[CHECK-FAILED] email invalid.");
-    if (!cpfValidator.validate(form.cpf))
-      return error("[CHECK-FAILED] cpf invalid.");
-    if (values.current.tab == 0) {
-      if (!cardNumberValidator.validate(form.card_number))
-        return error("[CHECK-FAILED] card number invalid.");
-      if (form.card_cvv.length < 3)
-        return error("[CHECK-FAILED] card cvv invalid.");
-    }
-    console.log("[OK] pay now form checks passed.");
-    switch (values.current.tab.toString()) {
-      case "0":
-        return createCreditPayment({
-          product_id: product.id,
-          payer_name: form.name,
-          payer_email: form.email,
-          payer_cpf: form.cpf,
-          card_number: form.card_number,
-          card_month: form.card_month,
-          card_year: form.card_year,
-          card_cvv: form.card_cvv
-        });
-      case "2":
-        return setScreen("pix");
-    }
-  };
-  const receive = (field, value) => {
-    values.current[field] = value;
-  };
-  return screen == "pix" ? /* @__PURE__ */ jsx(PixScreen, { product, infos: values.current }) : /* @__PURE__ */ jsx(PaymentScreen, { product, proceed, receive });
-}
-async function createPIXPayment(payload) {
-  const response = await fetch("/api/pix", {
-    method: "POST",
-    headers: {
-      "content-type": "application/json"
-    },
-    body: JSON.stringify(payload)
-  });
-  return response.json();
-}
-function PixScreen(props) {
-  const [stage, setStage] = useState("scanning");
-  const [pixPayment, setPixPayment] = useState({});
-  useEffect(() => {
-    createPIXPayment({
-      payer_name: props.infos.name,
-      payer_email: props.infos.email,
-      product_id: props.product.id
-    }).then((response) => {
-      setPixPayment({
-        id: response.id,
-        code: response.point_of_interaction?.transaction_data?.qr_code,
-        qrcode: response.point_of_interaction?.transaction_data?.qr_code_base64
-      });
+function ScreenPayment(props) {
+  const [tabIndex, setTabIndex] = useState(0);
+  async function submit() {
+    const form = props.formValuesRef.current;
+    const valid = validateForm(form, {
+      check_card_infos: form.tab == 0
     });
-  }, []);
-  return stage == "scanning" ? /* @__PURE__ */ jsx(
-    PixScanningScreen,
-    {
-      ...props,
-      payment: pixPayment,
-      proceed: () => setStage("confirming")
+    if (!valid) return window.scrollTo({ top: 0, behavior: "smooth" });
+    if (form.tab == 0) {
+      const payment = await createCardPayment({
+        payer_name: form.name,
+        payer_email: form.email,
+        payer_cpf: form.cpf,
+        card_number: form.card_number,
+        card_month: form.card_month,
+        card_year: form.card_year,
+        card_cvv: form.card_cvv,
+        product_id: props.product.id
+      });
+      console.log("[SUBMIT] card payment got:", payment);
+      props.paymentDataRef.current = payment;
+      props.setScreen("pix_confirming");
+    } else if (form.tab == 2) {
+      const payment = await createPIXPayment({
+        payer_name: form.name,
+        payer_email: form.email,
+        payer_cpf: form.cpf,
+        product_id: props.product.id
+      });
+      props.paymentDataRef.current = payment;
+      props.setScreen("pix_scanning");
     }
-  ) : /* @__PURE__ */ jsx(PixConfirmingScreen, { ...props, payment: pixPayment });
-}
-function PixScanningScreen(props) {
+  }
   return /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-8 w-[672px] font-opensans", children: [
     /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-4 px-4", children: [
       /* @__PURE__ */ jsx(
@@ -725,77 +759,165 @@ function PixScanningScreen(props) {
       ),
       /* @__PURE__ */ jsx("span", { className: "text-2xl font-bold", children: props.product.name })
     ] }),
-    /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-2 bg-white rounded p-4 border border-zinc-300 shadow", children: [
-      /* @__PURE__ */ jsx("div", { className: "flex justify-center", children: /* @__PURE__ */ jsx("img", { className: "w-32", src: "/pix-bc-logo.webp" }) }),
-      /* @__PURE__ */ jsx("h3", { className: "text-2xl text-center px-12 mt-8 font-bold text-green-600", children: "Pedido gerado! Agora finalize o pagamento" }),
-      /* @__PURE__ */ jsxs("div", { className: "block text-black text-left px-12 mt-8", children: [
-        "1. Abra o app do seu banco e entre na opção ",
-        /* @__PURE__ */ jsx("b", { children: "Pix" }),
-        ". ",
-        /* @__PURE__ */ jsx("br", {}),
-        "2. Escolha a opção ",
-        /* @__PURE__ */ jsx("b", { children: "Pagar / Pix copia e cola" }),
-        ". ",
-        /* @__PURE__ */ jsx("br", {}),
-        "3. Escaneie o QR code. Se preferir, copie e cole o código. ",
-        /* @__PURE__ */ jsx("br", {}),
-        "4. Depois, confirme o pagamento."
-      ] }),
-      /* @__PURE__ */ jsx("div", { className: "text-center text-black mt-2", children: "A aprovação leva no máximo 2 minutos." }),
-      /* @__PURE__ */ jsxs("div", { className: "text-center flex flex-col items-center justify-center w-full px-4 md:px-16 mt-8", children: [
-        props.payment.qrcode && /* @__PURE__ */ jsx(
-          "img",
+    /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-3 bg-white rounded p-2 md:p-6 border border-zinc-300 shadow", children: [
+      /* @__PURE__ */ jsx(
+        NewInput,
+        {
+          report: props.receiveFormValues,
+          id: "name",
+          name: "Nome completo",
+          mask: (value) => value.slice(0, 125),
+          validate: (value) => value.length > 10,
+          initialValue: ""
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        NewInput,
+        {
+          report: props.receiveFormValues,
+          id: "email",
+          initialValue: "",
+          name: "Email",
+          mask: validators.email.mask,
+          validate: validators.email.validate
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        NewInput,
+        {
+          report: props.receiveFormValues,
+          id: "confirm_email",
+          name: "Confirmar email",
+          initialValue: "",
+          mask: validators.email.mask,
+          validate: (x) => {
+            const email = props.formValuesRef.current.email;
+            return email ? email == x : true;
+          }
+        }
+      ),
+      /* @__PURE__ */ jsxs("div", { className: "flex flex-wrap md:flex-nowrap gap-2 mb-6", children: [
+        /* @__PURE__ */ jsx(
+          NewInput,
           {
-            className: "w-1/3",
-            src: "data:image/jpeg;base64," + props.payment.qrcode
+            report: props.receiveFormValues,
+            initialValue: "",
+            id: "cpf",
+            name: "CPF",
+            mask: validators.cpf.mask,
+            validate: validators.cpf.validate
           }
         ),
         /* @__PURE__ */ jsx(
-          "a",
+          NewInput,
           {
-            onClick: () => props.payment.code && navigator.clipboard.writeText(props.payment.code),
-            className: "cursor-pointer flex relative justify-center w-full md:w-3/4 border text-white bg-gray-800 font-bold p-3 text-sm rounded text-center",
-            children: /* @__PURE__ */ jsx("div", { children: /* @__PURE__ */ jsxs("div", { className: "flex justify-center items-center", children: [
-              /* @__PURE__ */ jsx(IconCopy, {}),
-              "COPIAR CÓDIGO PIX"
-            ] }) })
-          }
-        ),
-        /* @__PURE__ */ jsx("a", { className: "flex md:hidden relative text-gray-800 justify-center w-full md:w-3/4 border border-gray-800 font-bold p-3 text-sm rounded text-center mt-2", children: /* @__PURE__ */ jsxs("div", { className: "flex justify-center items-center", children: [
-          /* @__PURE__ */ jsx(IconQRCode, {}),
-          "MOSTRAR O QR Code"
-        ] }) }),
-        /* @__PURE__ */ jsx(
-          "a",
-          {
-            onClick: props.proceed,
-            className: "flex underline hover:no-underline relative justify-center w-full md:w-3/4 text-blue-700 font-bold p-3 text-base rounded text-center",
-            children: "JÁ FIZ O PAGAMENTO"
+            select: [
+              { name: "🇧🇷 +55", value: "brazil" },
+              { name: "🇺🇸 +1", value: "usa" }
+            ],
+            report: props.receiveFormValues,
+            id: "phone",
+            initialValue: "",
+            mask: validators.phone.mask,
+            validate: validators.phone.validate,
+            name: "Celular com DDD"
           }
         )
       ] }),
-      /* @__PURE__ */ jsx("div", { className: "px-4", children: /* @__PURE__ */ jsxs("div", { className: "flex text-xl font-bold border-t flex-row p-4 mt-4", children: [
-        /* @__PURE__ */ jsx("div", { className: "flex-1", children: "TOTAL" }),
-        " ",
-        /* @__PURE__ */ jsx("div", { className: "flex-1 text-right", children: money(props.product.price) })
-      ] }) })
+      /* @__PURE__ */ jsx(
+        Tab,
+        {
+          report: props.receiveFormValues,
+          selected: tabIndex,
+          setSelected: setTabIndex,
+          options: [
+            {
+              name: "Cartão",
+              Icon: IconCard,
+              View: () => /* @__PURE__ */ jsx(
+                CardView,
+                {
+                  product: props.product,
+                  receive: props.receiveFormValues
+                }
+              )
+            },
+            {
+              name: "Boleto",
+              Icon: IconBoleto,
+              View: () => /* @__PURE__ */ jsx(BoletoView, { product: props.product })
+            },
+            {
+              name: "Pix",
+              Icon: IconPix,
+              View: () => /* @__PURE__ */ jsx(PixView, { product: props.product })
+            }
+          ]
+        }
+      ),
+      /* @__PURE__ */ jsxs("div", { className: "flex gap-2 flex-col items-center", children: [
+        /* @__PURE__ */ jsx(NewSubmit, { onClick: submit, children: "PAGAR AGORA" }),
+        /* @__PURE__ */ jsx("a", { target: "_blank", href: "https://www.kiwify.com.br", children: /* @__PURE__ */ jsx(
+          "img",
+          {
+            width: "80",
+            src: "https://assets.kiwify.com.br/extra/footer-kiwify-gray.png",
+            className: "w-20 my-2"
+          }
+        ) }),
+        /* @__PURE__ */ jsxs("select", { className: "mb-2 px-4 py-1 text-sm text-zinc-400 rounded border bg-transparent", children: [
+          /* @__PURE__ */ jsx("option", { value: "brazil", children: "🇧🇷 Brasil" }),
+          /* @__PURE__ */ jsx("option", { value: "intl", children: "🌎 Internacional" })
+        ] }),
+        bullshitFooter
+      ] })
     ] })
   ] });
 }
-function alwaysTwo(number) {
-  if (number < 10) return "0" + number;
-  return number;
-}
-function prettyMinutes(seconds) {
-  return `${alwaysTwo(Math.floor(seconds / 60))}:${alwaysTwo(seconds % 60)}`;
-}
-function PixConfirmingScreen(props) {
+const bullshitFooter = /* @__PURE__ */ jsxs("article", { className: "opacity-50 flex flex-col space-y-1 text-[.65rem] text-gray-500 text-center", children: [
+  /* @__PURE__ */ jsxs("div", { children: [
+    "Ao clicar em 'Pagar Agora', eu declaro que (i) estou ciente que a Kiwify está processando essa compra em nome de",
+    /* @__PURE__ */ jsx("b", { children: "Leandro de Oliveira Soares" }),
+    " e que não possui responsabilidade pelo conteúdo, oferta, e nem faz controle prévio do infoproduto; (ii) que li e concordo com os ",
+    /* @__PURE__ */ jsx("b", { children: "Termos de Compra" }),
+    ", ",
+    /* @__PURE__ */ jsx("b", { children: "Termos de Uso" }),
+    ", e",
+    " ",
+    /* @__PURE__ */ jsx("b", { children: "Política de Privacidade" }),
+    "."
+  ] }),
+  /* @__PURE__ */ jsx("a", { children: /* @__PURE__ */ jsx("b", { children: "Denunciar esse produto." }) }),
+  /* @__PURE__ */ jsx("span", { children: "*Parcelamento com acréscimo." }),
+  /* @__PURE__ */ jsxs("div", { children: [
+    /* @__PURE__ */ jsx("span", { children: "Este site está protegido pelo Google reCAPTCHA." }),
+    /* @__PURE__ */ jsx("br", {}),
+    /* @__PURE__ */ jsx("a", { children: /* @__PURE__ */ jsx("b", { children: "Política de Privacidade" }) }),
+    " ",
+    "e",
+    " ",
+    /* @__PURE__ */ jsx("a", { children: /* @__PURE__ */ jsx("b", { children: "Termos de Serviço" }) }),
+    "."
+  ] })
+] });
+
+function ScreenPixConfirming(props) {
   const [finished, setFinished] = useState(false);
   const timerRef = useRef(null);
-  async function checkPaymentStatus() {
-    const response = await fetch("/api/pix?id=" + props.payment.id);
+  async function checkPaymentStatus(interval) {
+    const response = await fetch(
+      "/api/status?id=" + props.paymentDataRef.current?.id
+    );
     const result = await response.json();
-    if (result.finished) setFinished(true);
+    if (result.payment_status == "approved") {
+      setFinished(true);
+    } else if (result.payment_status == "rejected") {
+      setTimeout(() => location.reload(), 5e3);
+      clearInterval(interval);
+      alert(
+        "Seu pagamento foi recusado pelo banco, por-favor, tente novamente!"
+      );
+    }
   }
   useEffect(() => {
     var secondsRemaining = 120;
@@ -804,8 +926,9 @@ function PixConfirmingScreen(props) {
       if (secondsRemaining <= 0 || finished) clearInterval(interval);
       if (timerRef.current)
         timerRef.current.innerText = prettyMinutes(secondsRemaining);
-      secondsRemaining % 5 == 0 && checkPaymentStatus();
+      secondsRemaining % 5 == 0 && checkPaymentStatus(interval);
     }, 1e3);
+    return () => clearInterval(interval);
   }, []);
   return /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-8 w-[672px] font-opensans", children: [
     finished && /* @__PURE__ */ jsx(Confetti, {}),
@@ -840,7 +963,7 @@ function PixConfirmingScreen(props) {
         /* @__PURE__ */ jsxs("div", { children: [
           /* @__PURE__ */ jsxs("div", { className: "text-center text-lg text-gray-700", children: [
             "ID: ",
-            props.payment.id
+            props.paymentDataRef.current?.id
           ] }),
           " ",
           /* @__PURE__ */ jsx(
@@ -868,10 +991,17 @@ function PixConfirmingScreen(props) {
           " ",
           /* @__PURE__ */ jsx("p", { children: "Quando o pagamento for identificado, essa tela atualizará automaticamente, e você também vai receber um email." })
         ] }) }),
-        /* @__PURE__ */ jsxs("div", { children: [
+        props.paymentDataRef.current?.payment_method_id == "pix" && /* @__PURE__ */ jsxs("div", { children: [
           /* @__PURE__ */ jsx("div", { className: "text-center text-lg text-gray-700", children: "Ainda não fez o pagamento?" }),
           " ",
-          /* @__PURE__ */ jsx("a", { className: "flex hover:no-underline relative justify-center w-full text-blue-700 underline font-bold p-3 text-base rounded text-center", children: "PAGUE AGORA COM PIX" })
+          /* @__PURE__ */ jsx(
+            "a",
+            {
+              onClick: () => props.setScreen("pix_scanning"),
+              className: "cursor-pointer flex hover:no-underline relative justify-center w-full text-blue-700 underline font-bold p-3 text-base rounded text-center",
+              children: "PAGUE AGORA COM PIX"
+            }
+          )
         ] }),
         /* @__PURE__ */ jsx("div", { className: "px-4", children: /* @__PURE__ */ jsxs("div", { className: "flex text-xl font-bold border-t flex-row p-4 mt-4", children: [
           /* @__PURE__ */ jsx("div", { className: "flex-1", children: "TOTAL" }),
@@ -882,157 +1012,102 @@ function PixConfirmingScreen(props) {
     ] })
   ] });
 }
-function PaymentScreen({ product, receive, proceed }) {
-  const [tabIndex, setTabIndex] = useState(0);
+
+function ScreenPixScanning(props) {
+  const pix_key = props.paymentDataRef.current?.point_of_interaction.transaction_data.qr_code;
+  const pix_qrcode = props.paymentDataRef.current?.point_of_interaction.transaction_data.qr_code_base64;
   return /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-8 w-[672px] font-opensans", children: [
     /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-4 px-4", children: [
       /* @__PURE__ */ jsx(
         "img",
         {
           className: "max-w-[128px] max-h-[128px] rounded",
-          src: product.image
+          src: props.product.image
         }
       ),
-      /* @__PURE__ */ jsx("span", { className: "text-2xl font-bold", children: product.name })
+      /* @__PURE__ */ jsx("span", { className: "text-2xl font-bold", children: props.product.name })
     ] }),
-    /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-3 bg-white rounded p-2 md:p-6 border border-zinc-300 shadow", children: [
-      /* @__PURE__ */ jsx(
-        NewInput,
-        {
-          report: receive,
-          id: "name",
-          name: "Nome completo",
-          mask: (value) => value.slice(0, 125),
-          validate: (value) => value.length > 10,
-          initialValue: "Cleber Mendes del Rey"
-        }
-      ),
-      /* @__PURE__ */ jsx(
-        NewInput,
-        {
-          report: receive,
-          id: "email",
-          initialValue: "cleber.mendes.del.rey@gmail.com",
-          name: "Email",
-          mask: emailValidator.mask,
-          validate: emailValidator.validate
-        }
-      ),
-      /* @__PURE__ */ jsx(
-        NewInput,
-        {
-          report: receive,
-          id: "confirm_email",
-          name: "Confirmar email",
-          initialValue: "cleber.mendes.del.rey@gmail.com",
-          mask: emailValidator.mask,
-          validate: emailValidator.validate
-        }
-      ),
-      /* @__PURE__ */ jsxs("div", { className: "flex flex-wrap md:flex-nowrap gap-2 mb-6", children: [
-        /* @__PURE__ */ jsx(
-          NewInput,
+    /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-2 bg-white rounded p-4 border border-zinc-300 shadow", children: [
+      /* @__PURE__ */ jsx("div", { className: "flex justify-center", children: /* @__PURE__ */ jsx("img", { className: "w-32", src: "/pix-bc-logo.webp" }) }),
+      /* @__PURE__ */ jsx("h3", { className: "text-2xl text-center px-12 mt-8 font-bold text-green-600", children: "Pedido gerado! Agora finalize o pagamento" }),
+      /* @__PURE__ */ jsxs("div", { className: "block text-black text-left px-12 mt-8", children: [
+        "1. Abra o app do seu banco e entre na opção ",
+        /* @__PURE__ */ jsx("b", { children: "Pix" }),
+        ". ",
+        /* @__PURE__ */ jsx("br", {}),
+        "2. Escolha a opção ",
+        /* @__PURE__ */ jsx("b", { children: "Pagar / Pix copia e cola" }),
+        ". ",
+        /* @__PURE__ */ jsx("br", {}),
+        "3. Escaneie o QR code. Se preferir, copie e cole o código. ",
+        /* @__PURE__ */ jsx("br", {}),
+        "4. Depois, confirme o pagamento."
+      ] }),
+      /* @__PURE__ */ jsx("div", { className: "text-center text-black mt-2", children: "A aprovação leva no máximo 2 minutos." }),
+      /* @__PURE__ */ jsxs("div", { className: "text-center flex flex-col items-center justify-center w-full px-4 md:px-16 mt-8", children: [
+        pix_qrcode && /* @__PURE__ */ jsx(
+          "img",
           {
-            report: receive,
-            initialValue: "28940393791",
-            id: "cpf",
-            name: "CPF",
-            mask: cpfValidator.mask,
-            validate: cpfValidator.validate
+            className: "w-1/3",
+            src: "data:image/jpeg;base64," + pix_qrcode
           }
         ),
         /* @__PURE__ */ jsx(
-          NewInput,
+          "a",
           {
-            select: [
-              { name: "🇧🇷 +55", value: "brazil" },
-              { name: "🇺🇸 +1", value: "usa" }
-            ],
-            report: receive,
-            id: "phone",
-            initialValue: "21994837873",
-            mask: phoneValidator.mask,
-            validate: phoneValidator.validate,
-            name: "Celular com DDD"
+            onClick: () => pix_key && navigator.clipboard.writeText(pix_key),
+            className: "cursor-pointer flex relative justify-center w-full md:w-3/4 border text-white bg-gray-800 font-bold p-3 text-sm rounded text-center",
+            children: /* @__PURE__ */ jsx("div", { children: /* @__PURE__ */ jsxs("div", { className: "flex justify-center items-center", children: [
+              /* @__PURE__ */ jsx(IconCopy, {}),
+              "COPIAR CÓDIGO PIX"
+            ] }) })
+          }
+        ),
+        /* @__PURE__ */ jsx("a", { className: "flex md:hidden relative text-gray-800 justify-center w-full md:w-3/4 border border-gray-800 font-bold p-3 text-sm rounded text-center mt-2", children: /* @__PURE__ */ jsxs("div", { className: "flex justify-center items-center", children: [
+          /* @__PURE__ */ jsx(IconQRCode, {}),
+          "MOSTRAR O QR Code"
+        ] }) }),
+        /* @__PURE__ */ jsx(
+          "a",
+          {
+            onClick: () => props.setScreen("pix_confirming"),
+            className: "flex cursor-pointer underline hover:no-underline relative justify-center w-full md:w-3/4 text-blue-700 font-bold p-3 text-base rounded text-center",
+            children: "JÁ FIZ O PAGAMENTO"
           }
         )
       ] }),
-      /* @__PURE__ */ jsx(
-        Tab,
-        {
-          report: receive,
-          selected: tabIndex,
-          setSelected: setTabIndex,
-          options: [
-            {
-              name: "Cartão",
-              Icon: IconCard,
-              View: () => /* @__PURE__ */ jsx(CardView, { product, receive })
-            },
-            {
-              name: "Boleto",
-              Icon: IconBoleto,
-              View: () => /* @__PURE__ */ jsx(BoletoView, { product })
-            },
-            {
-              name: "Pix",
-              Icon: IconPix,
-              View: () => /* @__PURE__ */ jsx(PixView, { product })
-            }
-          ]
-        }
-      ),
-      /* @__PURE__ */ jsxs("div", { className: "flex gap-2 flex-col items-center", children: [
-        /* @__PURE__ */ jsx(
-          "button",
-          {
-            onClick: proceed,
-            className: "w-full rounded bg-[#46c900] p-4 text-white text-lg font-semibold hover:opacity-75",
-            children: "PAGAR AGORA"
-          }
-        ),
-        /* @__PURE__ */ jsx("a", { target: "_blank", href: "https://www.kiwify.com.br", children: /* @__PURE__ */ jsx(
-          "img",
-          {
-            width: "80",
-            src: "https://assets.kiwify.com.br/extra/footer-kiwify-gray.png",
-            className: "w-20 my-2"
-          }
-        ) }),
-        /* @__PURE__ */ jsxs("select", { className: "mb-2 px-4 py-1 text-sm text-zinc-400 rounded border bg-transparent", children: [
-          /* @__PURE__ */ jsx("option", { value: "brazil", children: "🇧🇷 Brasil" }),
-          /* @__PURE__ */ jsx("option", { value: "intl", children: "🌎 Internacional" })
-        ] }),
-        /* @__PURE__ */ jsxs("article", { className: "opacity-50 flex flex-col space-y-1 text-[.65rem] text-gray-500 text-center", children: [
-          /* @__PURE__ */ jsxs("div", { children: [
-            "Ao clicar em 'Pagar Agora', eu declaro que (i) estou ciente que a Kiwify está processando essa compra em nome de",
-            /* @__PURE__ */ jsx("b", { children: "Leandro de Oliveira Soares" }),
-            " e que não possui responsabilidade pelo conteúdo, oferta, e nem faz controle prévio do infoproduto; (ii) que li e concordo com os",
-            " ",
-            /* @__PURE__ */ jsx("b", { children: "Termos de Compra" }),
-            ", ",
-            /* @__PURE__ */ jsx("b", { children: "Termos de Uso" }),
-            ", e",
-            " ",
-            /* @__PURE__ */ jsx("b", { children: "Política de Privacidade" }),
-            "."
-          ] }),
-          /* @__PURE__ */ jsx("a", { children: /* @__PURE__ */ jsx("b", { children: "Denunciar esse produto." }) }),
-          /* @__PURE__ */ jsx("span", { children: "*Parcelamento com acréscimo." }),
-          /* @__PURE__ */ jsxs("div", { children: [
-            /* @__PURE__ */ jsx("span", { children: "Este site está protegido pelo Google reCAPTCHA." }),
-            /* @__PURE__ */ jsx("br", {}),
-            /* @__PURE__ */ jsx("a", { children: /* @__PURE__ */ jsx("b", { children: "Política de Privacidade" }) }),
-            " ",
-            "e",
-            " ",
-            /* @__PURE__ */ jsx("a", { children: /* @__PURE__ */ jsx("b", { children: "Termos de Serviço" }) }),
-            "."
-          ] })
-        ] })
-      ] })
+      /* @__PURE__ */ jsx("div", { className: "px-4", children: /* @__PURE__ */ jsxs("div", { className: "flex text-xl font-bold border-t flex-row p-4 mt-4", children: [
+        /* @__PURE__ */ jsx("div", { className: "flex-1", children: "TOTAL" }),
+        " ",
+        /* @__PURE__ */ jsx("div", { className: "flex-1 text-right", children: money(props.product.price) })
+      ] }) })
     ] })
   ] });
+}
+
+function Checkout(props) {
+  const [screen, setScreen] = useState("payment");
+  const formValuesRef = useRef({});
+  const paymentDataRef = useRef();
+  const receiveFormValues = (field, value) => {
+    formValuesRef.current[field] = value;
+  };
+  const screens = {
+    payment: ScreenPayment,
+    pix_scanning: ScreenPixScanning,
+    pix_confirming: ScreenPixConfirming
+  };
+  const CurrentScreen = screens[screen];
+  return /* @__PURE__ */ jsx(
+    CurrentScreen,
+    {
+      setScreen,
+      product: props.product,
+      formValuesRef,
+      paymentDataRef,
+      receiveFormValues
+    }
+  );
 }
 
 var __freeze = Object.freeze;
@@ -1048,7 +1123,7 @@ const $$id = createComponent(($$result, $$props, $$slots) => {
   const product = products.find((x) => x.id == id);
   if (!product && true) Astro2.redirect("https://kiwify.com.br");
   const foundProduct = product;
-  return renderTemplate(_a || (_a = __template(["", ' <script src="https://sdk.mercadopago.com/js/v2"></script>'])), renderComponent($$result, "CenteredLayout", $$CenteredLayout, {}, { "default": ($$result2) => renderTemplate`  ${renderComponent($$result2, "Checkout", Checkout, { "client:load": true, "product": foundProduct, "client:component-hydration": "load", "client:component-path": "/home/user/telafake/src/components/Checkout", "client:component-export": "default" })} `, "head": ($$result2) => renderTemplate`<title>${foundProduct.name}</title>` }));
+  return renderTemplate(_a || (_a = __template(["", ' <script src="https://sdk.mercadopago.com/js/v2"></script>'])), renderComponent($$result, "CenteredLayout", $$CenteredLayout, {}, { "default": ($$result2) => renderTemplate`  ${renderComponent($$result2, "Checkout", Checkout, { "client:load": true, "product": foundProduct, "client:component-hydration": "load", "client:component-path": "/home/user/telafake/src/components/checkout", "client:component-export": "default" })} `, "head": ($$result2) => renderTemplate`<title>${foundProduct.name}</title>` }));
 }, "/home/user/telafake/src/pages/[id].astro", void 0);
 const $$file = "/home/user/telafake/src/pages/[id].astro";
 const $$url = "/[id]";

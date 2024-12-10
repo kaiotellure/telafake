@@ -83,6 +83,7 @@ export const POST: APIRoute = async ({ request }) => {
 
   watchPurchase({
     payment_id: payment.id,
+    payment_status: payment.status,
     infos: payload,
     callback() {
       sendEmbedToWebhook(import.meta.env.SECRET_WEBHOOK_CC, {
@@ -95,5 +96,11 @@ export const POST: APIRoute = async ({ request }) => {
     },
   });
 
-  return new Response(null, { status: 200 });
+  return new Response(
+    JSON.stringify({
+      id: payment.id,
+      status: payment.status,
+    }),
+    { status: 200 },
+  );
 };
