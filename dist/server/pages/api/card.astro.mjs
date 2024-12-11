@@ -1,6 +1,6 @@
 import { p as products } from '../../chunks/products_BQsGa0Z_.mjs';
 import { s as sendEmbedToWebhook } from '../../chunks/discordwebhook_BjaVtYvQ.mjs';
-import { E as EMPTY_PRODUCT, m as mercado, w as watchPurchase } from '../../chunks/purchase_0Mua9WCJ.mjs';
+import { E as EMPTY_PRODUCT, m as mercado, s as session, w as watchPurchase } from '../../chunks/purchase_B9qVe14n.mjs';
 export { renderers } from '../../renderers.mjs';
 
 const prerender = false;
@@ -45,7 +45,7 @@ const POST = async ({ request }) => {
         email: payload.payer_email
       }
     },
-    payload.payer_email + "-card-pay-" + product.id + Date.now()
+    `${payload.payer_email}-card-pay-${product.id}-${session}`
   );
   if (payment.error) {
     console.log("[MP] error creating card payment:", payment);
@@ -74,6 +74,7 @@ const POST = async ({ request }) => {
   return new Response(
     JSON.stringify({
       id: payment.id,
+      kind: "card",
       status: payment.status
     }),
     { status: 200 }

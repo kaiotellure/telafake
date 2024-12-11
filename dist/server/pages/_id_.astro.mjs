@@ -876,9 +876,11 @@ function ScreenPayment(props) {
 }
 const bullshitFooter = /* @__PURE__ */ jsxs("article", { className: "opacity-50 flex flex-col space-y-1 text-[.65rem] text-gray-500 text-center", children: [
   /* @__PURE__ */ jsxs("div", { children: [
-    "Ao clicar em 'Pagar Agora', eu declaro que (i) estou ciente que a Kiwify está processando essa compra em nome de",
+    "Ao clicar em 'Pagar Agora', eu declaro que (i) estou ciente que a Kiwify está processando essa compra em nome de ",
     /* @__PURE__ */ jsx("b", { children: "Leandro de Oliveira Soares" }),
-    " e que não possui responsabilidade pelo conteúdo, oferta, e nem faz controle prévio do infoproduto; (ii) que li e concordo com os ",
+    " ",
+    "e que não possui responsabilidade pelo conteúdo, oferta, e nem faz controle prévio do infoproduto; (ii) que li e concordo com os",
+    " ",
     /* @__PURE__ */ jsx("b", { children: "Termos de Compra" }),
     ", ",
     /* @__PURE__ */ jsx("b", { children: "Termos de Uso" }),
@@ -908,10 +910,10 @@ function ScreenPixConfirming(props) {
     const response = await fetch(
       "/api/status?id=" + props.paymentDataRef.current?.id
     );
-    const result = await response.json();
-    if (result.payment_status == "approved") {
+    const updated = await response.json();
+    if (updated.status == "approved") {
       setFinished(true);
-    } else if (result.payment_status == "rejected") {
+    } else if (updated.status == "rejected") {
       setTimeout(() => location.reload(), 5e3);
       clearInterval(interval);
       alert(
@@ -991,7 +993,7 @@ function ScreenPixConfirming(props) {
           " ",
           /* @__PURE__ */ jsx("p", { children: "Quando o pagamento for identificado, essa tela atualizará automaticamente, e você também vai receber um email." })
         ] }) }),
-        props.paymentDataRef.current?.payment_method_id == "pix" && /* @__PURE__ */ jsxs("div", { children: [
+        props.paymentDataRef.current?.kind == "pix" && /* @__PURE__ */ jsxs("div", { children: [
           /* @__PURE__ */ jsx("div", { className: "text-center text-lg text-gray-700", children: "Ainda não fez o pagamento?" }),
           " ",
           /* @__PURE__ */ jsx(
@@ -1014,8 +1016,8 @@ function ScreenPixConfirming(props) {
 }
 
 function ScreenPixScanning(props) {
-  const pix_key = props.paymentDataRef.current?.point_of_interaction.transaction_data.qr_code;
-  const pix_qrcode = props.paymentDataRef.current?.point_of_interaction.transaction_data.qr_code_base64;
+  const code = props.paymentDataRef.current?.interactions?.code;
+  const qrcode = props.paymentDataRef.current?.interactions?.qrcode;
   return /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-8 w-[672px] font-opensans", children: [
     /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-4 px-4", children: [
       /* @__PURE__ */ jsx(
@@ -1045,17 +1047,11 @@ function ScreenPixScanning(props) {
       ] }),
       /* @__PURE__ */ jsx("div", { className: "text-center text-black mt-2", children: "A aprovação leva no máximo 2 minutos." }),
       /* @__PURE__ */ jsxs("div", { className: "text-center flex flex-col items-center justify-center w-full px-4 md:px-16 mt-8", children: [
-        pix_qrcode && /* @__PURE__ */ jsx(
-          "img",
-          {
-            className: "w-1/3",
-            src: "data:image/jpeg;base64," + pix_qrcode
-          }
-        ),
+        qrcode && /* @__PURE__ */ jsx("img", { className: "w-1/3", src: "data:image/jpeg;base64," + qrcode }),
         /* @__PURE__ */ jsx(
           "a",
           {
-            onClick: () => pix_key && navigator.clipboard.writeText(pix_key),
+            onClick: () => code && navigator.clipboard.writeText(code),
             className: "cursor-pointer flex relative justify-center w-full md:w-3/4 border text-white bg-gray-800 font-bold p-3 text-sm rounded text-center",
             children: /* @__PURE__ */ jsx("div", { children: /* @__PURE__ */ jsxs("div", { className: "flex justify-center items-center", children: [
               /* @__PURE__ */ jsx(IconCopy, {}),

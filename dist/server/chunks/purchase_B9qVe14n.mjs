@@ -48,6 +48,7 @@ const mercado = new MercadoPago({
   accessToken: "TEST-5860457647630463-120823-70ce04db13dda138906b5504a8066711-521253923",
   publicKey: "TEST-3ad4df97-7039-4672-bc05-dbab6c804b79"
 });
+const session = Date.now();
 
 const EMPTY_PRODUCT = {
   image: "https://google.com/favicon.ico",
@@ -83,4 +84,4 @@ setInterval(() => {
   });
 }, 10 * 1e3);
 
-export { EMPTY_PRODUCT as E, mercado as m, queryPurchase as q, watchPurchase as w };
+export { EMPTY_PRODUCT as E, mercado as m, queryPurchase as q, session as s, watchPurchase as w };

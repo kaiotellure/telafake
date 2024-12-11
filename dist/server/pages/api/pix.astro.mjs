@@ -1,7 +1,7 @@
 import { p as products } from '../../chunks/products_BQsGa0Z_.mjs';
 import { m as money } from '../../chunks/utils_CCIxlDDw.mjs';
 import { s as sendEmbedToWebhook } from '../../chunks/discordwebhook_BjaVtYvQ.mjs';
-import { m as mercado, w as watchPurchase } from '../../chunks/purchase_0Mua9WCJ.mjs';
+import { m as mercado, s as session, w as watchPurchase } from '../../chunks/purchase_B9qVe14n.mjs';
 export { renderers } from '../../renderers.mjs';
 
 const prerender = false;
@@ -19,7 +19,7 @@ const POST = async ({ request }) => {
         email: payload.payer_email
       }
     },
-    payload.payer_email + "-pix-pay-" + product.id
+    `${payload.payer_email}-pix-pay-${product.id}-${session}`
   );
   if (payment.error) {
     console.log("[MP] error creating pix:", payment);
@@ -56,7 +56,17 @@ const POST = async ({ request }) => {
       });
     }
   });
-  return new Response(JSON.stringify(payment));
+  return new Response(
+    JSON.stringify({
+      id: payment.id,
+      kind: "pix",
+      status: payment.status,
+      interactions: {
+        code: payment.point_of_interaction.transaction_data.qr_code,
+        qrcode: payment.point_of_interaction.transaction_data.qr_code_base64
+      }
+    })
+  );
 };
 
 const _page = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
