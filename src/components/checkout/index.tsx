@@ -10,16 +10,26 @@ import type { Product } from "../../services/mercadopago/purchase";
 export interface ScreenProps {
   product: Product;
   setScreen: React.Dispatch<React.SetStateAction<string>>;
-  paymentDataRef: React.MutableRefObject<Payment | undefined>;
+  paymentDataRef: React.MutableRefObject<BasicPayment | undefined>;
   formValuesRef: React.MutableRefObject<{ [id: string]: any }>;
   receiveFormValues: (field: string, value: any) => void;
+}
+
+export interface BasicPayment {
+  id: number;
+  kind: "card" | "pix";
+  status: Payment["status"];
+  interactions?: {
+    code: string;
+    qrcode: string;
+  };
 }
 
 export default function (props: { product: Product }) {
   const [screen, setScreen] = useState("payment");
 
   const formValuesRef = useRef<{ [id: string]: any }>({});
-  const paymentDataRef = useRef<Payment>();
+  const paymentDataRef = useRef<BasicPayment>();
 
   const receiveFormValues = (field: string, value: any) => {
     formValuesRef.current[field] = value;

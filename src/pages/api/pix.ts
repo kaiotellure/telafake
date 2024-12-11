@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import products from "../../assets/products.json";
 import { money } from "../../components/utils";
 import { sendEmbedToWebhook } from "../../services/discordwebhook";
-import { mercado } from "../../services/mercadopago";
+import { mercado, session } from "../../services/mercadopago";
 import {
   watchPurchase,
   type Purchase,
@@ -26,7 +26,7 @@ export const POST: APIRoute = async ({ request }) => {
         email: payload.payer_email,
       },
     },
-    payload.payer_email + "-pix-pay-" + product.id,
+    `${payload.payer_email}-pix-pay-${product.id}-${session}`,
   );
 
   if (payment.error) {
@@ -41,6 +41,7 @@ export const POST: APIRoute = async ({ request }) => {
     payload.payer_email,
   );
 
+  // log to discord webhook when this payment has been completed
   watchPurchase({
     payment_id: payment.id,
     payment_status: payment.status,
@@ -67,5 +68,15 @@ export const POST: APIRoute = async ({ request }) => {
     },
   });
 
-  return new Response(JSON.stringify(payment));
+  return new Response(
+    JSON.stringify({
+      id: payment.id,
+      kind: "pix",
+      status: payment.status,
+      interactions: {
+        code: payment.point_of_interaction.transaction_data.qr_code,
+        qrcode: payment.point_of_interaction.transaction_data.qr_code_base64,
+      },
+    }),
+  );
 };

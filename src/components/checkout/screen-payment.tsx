@@ -185,10 +185,10 @@ const bullshitFooter = (
   <article className="opacity-50 flex flex-col space-y-1 text-[.65rem] text-gray-500 text-center">
     <div>
       Ao clicar em 'Pagar Agora', eu declaro que (i) estou ciente que a Kiwify
-      está processando essa compra em nome de
-      <b>Leandro de Oliveira Soares</b> e que não possui responsabilidade pelo
-      conteúdo, oferta, e nem faz controle prévio do infoproduto; (ii) que li e
-      concordo com os <b>Termos de Compra</b>, <b>Termos de Uso</b>, e{" "}
+      está processando essa compra em nome de <b>Leandro de Oliveira Soares</b>{" "}
+      e que não possui responsabilidade pelo conteúdo, oferta, e nem faz
+      controle prévio do infoproduto; (ii) que li e concordo com os{" "}
+      <b>Termos de Compra</b>, <b>Termos de Uso</b>, e{" "}
       <b>Política de Privacidade</b>.
     </div>
     <a>

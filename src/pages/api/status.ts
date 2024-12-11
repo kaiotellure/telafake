@@ -11,7 +11,14 @@ export const GET: APIRoute = async ({ url }) => {
 
   const purchase = queryPurchase(parseInt(id));
 
-  return new Response(purchase && JSON.stringify(purchase), {
-    status: purchase ? 200 : 400,
-  });
+  return new Response(
+    purchase &&
+      JSON.stringify({
+        status: purchase.payment_status,
+        finished: purchase.finished,
+      }),
+    {
+      status: purchase ? 200 : 400,
+    },
+  );
 };

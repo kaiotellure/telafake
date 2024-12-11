@@ -7,3 +7,5 @@ export const mercado = new MercadoPago({
   accessToken: import.meta.env.SECRET_MP_TOKEN,
   publicKey: import.meta.env.PUBLIC_MP_KEY,
 });
+
+export const session = Date.now();

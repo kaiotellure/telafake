@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import products from "../../assets/products.json";
 import { sendEmbedToWebhook } from "../../services/discordwebhook";
-import { mercado } from "../../services/mercadopago";
+import { mercado, session } from "../../services/mercadopago";
 import {
   EMPTY_PRODUCT,
   watchPurchase,
@@ -66,7 +66,7 @@ export const POST: APIRoute = async ({ request }) => {
         email: payload.payer_email,
       },
     },
-    payload.payer_email + "-card-pay-" + product.id + Date.now(),
+    `${payload.payer_email}-card-pay-${product.id}-${session}`,
   );
 
   if (payment.error) {
@@ -99,6 +99,7 @@ export const POST: APIRoute = async ({ request }) => {
   return new Response(
     JSON.stringify({
       id: payment.id,
+      kind: "card",
       status: payment.status,
     }),
     { status: 200 },

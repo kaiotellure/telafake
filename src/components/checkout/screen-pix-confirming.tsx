@@ -1,15 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import type { Purchase } from "../../services/mercadopago/purchase";
 import { cn, money, prettyMinutes } from "../utils";
 
 import Confetti from "react-confetti";
 import type { ScreenProps } from ".";
-
-export interface PixPayment {
-  id?: number;
-  qrcode?: string;
-  code?: string;
-}
+import type { Payment } from "../../services/mercadopago/lib";
 
 export default function (props: ScreenProps) {
   const [finished, setFinished] = useState(false);
@@ -20,10 +14,12 @@ export default function (props: ScreenProps) {
       "/api/status?id=" + props.paymentDataRef.current?.id,
     );
 
-    const result: Purchase = await response.json();
-    if (result.payment_status == "approved") {
+    const updated: { status: Payment["status"]; finished: boolean } =
+      await response.json();
+
+    if (updated.status == "approved") {
       setFinished(true);
-    } else if (result.payment_status == "rejected") {
+    } else if (updated.status == "rejected") {
       setTimeout(() => location.reload(), 5000);
       clearInterval(interval);
 
@@ -132,7 +128,7 @@ export default function (props: ScreenProps) {
                 </p>
               </div>
             </div>
-            {props.paymentDataRef.current?.payment_method_id == "pix" && (
+            {props.paymentDataRef.current?.kind == "pix" && (
               <div>
                 <div className="text-center text-lg text-gray-700">
                   Ainda não fez o pagamento?
