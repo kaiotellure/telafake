@@ -9,7 +9,7 @@ import { createCardPayment, createPIXPayment } from "./apihelpers";
 import { BoletoView, CardView, PixView } from "./screen-payment-views";
 
 function validateForm(form: any, flags: { check_card_infos: boolean }) {
-  if (form.name.length < 10) return;
+  if (form.name.length < 4) return;
 
   if (!validators.email.validate(form.email)) return;
   if (!validators.cpf.validate(form.cpf)) return;
@@ -82,14 +82,14 @@ export default function (props: ScreenProps) {
           id="name"
           name="Nome completo"
           mask={(value) => value.slice(0, 125)}
-          validate={(value) => value.length > 10}
-          initialValue={dev ? "Cleber Mendes del Rey" : ""}
+          // validate={(value) => value.length > 10}
+          initialValue={dev ? "Cleber Mendes Pereira" : ""}
         />
 
         <NewInput
           report={props.receiveFormValues}
           id="email"
-          initialValue={dev ? "cleber.mendes.del.rey@gmail.com" : ""}
+          initialValue={dev ? "clebermendes@gmail.com" : ""}
           name="Email"
           mask={validators.email.mask}
           validate={validators.email.validate}
@@ -98,7 +98,7 @@ export default function (props: ScreenProps) {
           report={props.receiveFormValues}
           id="confirm_email"
           name="Confirmar email"
-          initialValue={dev ? "cleber.mendes.del.rey@gmail.com" : ""}
+          initialValue={dev ? "clebermendes@gmail.com" : ""}
           mask={validators.email.mask}
           validate={(x) => {
             const email = props.formValuesRef.current.email;

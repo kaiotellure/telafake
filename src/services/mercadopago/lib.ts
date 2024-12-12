@@ -48,6 +48,8 @@ interface PaymentOptions {
   payment_method_id?: "pix";
   token?: string;
   payer: {
+    first_name?: string;
+    last_name?: string;
     email: string;
   };
 }
