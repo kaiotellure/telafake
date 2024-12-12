@@ -78,3 +78,37 @@ test("creating pix payment", async (t) => {
     payment.point_of_interaction.transaction_data.qr_code_base64,
   ).toBeTypeOf("string");
 });
+
+test("creating boleto payment", async (t) => {
+  const payment = await mercado.createPayment(
+    {
+      transaction_amount: 10,
+      installments: 1,
+      external_reference: session.toString(),
+      description: "this is a testing boleto, NOT REAL",
+      payment_method_id: "bolbradesco",
+      payer: {
+        first_name: "Cleber",
+        last_name: "Mendes Pereira",
+        email: "testinguser@gmail.com",
+        identification: {
+          type: "CPF",
+          number: "12345678909",
+        },
+      },
+    },
+    session + "-testing-boleto",
+  );
+
+  t.onTestFinished(() =>
+    // saving the response for later analysis.
+    saveTestdata("boleto-payment", payment),
+  );
+  // printing when failing for debuging.
+  t.onTestFailed(() => console.log(payment));
+
+  expect(payment.error).toBeUndefined();
+  expect(payment.status).toBe("pending");
+
+  console.log(payment);
+});

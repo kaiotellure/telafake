@@ -15,14 +15,17 @@ type CardInfos = Expiration & {
   security_code: string;
 };
 
+interface WithIdentification {
+  identification: {
+    type: "CPF" | string;
+    number: string;
+  };
+}
+
 interface WithCardHolder {
   cardholder: {
     name: string;
-    identification: {
-      type: "CPF" | string;
-      number: string;
-    };
-  };
+  } & WithIdentification;
 }
 
 export type CardToken = (Expiration & WithCardHolder) & {
@@ -45,13 +48,14 @@ interface PaymentOptions {
   transaction_amount: number;
   installments: number;
   description?: string;
-  payment_method_id?: "pix";
+  payment_method_id?: "pix" | "bolbradesco";
   token?: string;
   payer: {
     first_name?: string;
     last_name?: string;
     email: string;
-  };
+  } & Partial<WithIdentification>;
+  external_reference?: string;
 }
 
 export interface Payment {
@@ -64,6 +68,10 @@ export interface Payment {
       qr_code: string;
     };
   };
+  transaction_details: {
+    digitable_line: string;
+    external_resource_url: string;
+  }
 }
 
 interface Error {
