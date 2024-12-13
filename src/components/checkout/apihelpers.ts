@@ -1,5 +1,7 @@
 import type { BasicPayment } from ".";
+import type { PostBoletoPayload, PostBoletoResponse } from "../../pages/api/boleto";
 import type { PostCardPayload } from "../../pages/api/card";
+import type { PostPixResponse } from "../../pages/api/pix";
 import type { CardToken } from "../../services/mercadopago/lib";
 import type { Purchase } from "../../services/mercadopago/purchase";
 
@@ -12,7 +14,19 @@ export async function createPIXPayment(payload: Purchase["infos"]) {
     body: JSON.stringify(payload),
   });
 
-  return (await response.json()) as BasicPayment;
+  return (await response.json()) as PostPixResponse;
+}
+
+export async function createBoletoPayment(payload: PostBoletoPayload) {
+  const response = await fetch("/api/boleto", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  return (await response.json()) as PostBoletoResponse;
 }
 
 export async function createCardPayment(payload: PostCardPayload) {

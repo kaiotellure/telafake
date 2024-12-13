@@ -13,6 +13,12 @@ function applyTax(total, tax, installments) {
 function prettyMinutes(seconds) {
   return `${alwaysTwo(Math.floor(seconds / 60))}:${alwaysTwo(seconds % 60)}`;
 }
+function nameSplit(fullname) {
+  const splited = fullname.replace(/\B\s+/g, "").split(" ");
+  const first = splited.shift();
+  const last = splited.join(" ");
+  return [first, last];
+}
 const cn = twMerge;
 
-export { alwaysTwo as a, applyTax as b, cn as c, money as m, prettyMinutes as p };
+export { alwaysTwo as a, applyTax as b, cn as c, money as m, nameSplit as n, prettyMinutes as p };

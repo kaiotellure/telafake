@@ -21,7 +21,13 @@ export interface PostCardPayload {
   card_token_id?: string;
 }
 
+const staticResponse = { id: 1320597714, kind: "card", status: "rejected" };
+
 export const POST: APIRoute = async ({ request }) => {
+  // while in dev mode, dont spam mp api
+  if (import.meta.env.DEV)
+    return new Response(JSON.stringify(staticResponse), { status: 302 });
+
   const payload: PostCardPayload = await request.json();
 
   const product =
@@ -60,7 +66,7 @@ export const POST: APIRoute = async ({ request }) => {
     {
       transaction_amount: product.price,
       installments: 1, // TODO: use choosed one
-      description: `compra de ${product.name}`,
+      description: `Comprando: ${product.name} na Kiwify.`,
       token: payload.card_token_id,
       payer: {
         email: payload.payer_email,

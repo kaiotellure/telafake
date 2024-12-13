@@ -3,8 +3,12 @@ import { IconCopy, IconQRCode } from "../Icons";
 import { money } from "../utils";
 
 export default function (props: ScreenProps) {
-  const code = props.paymentDataRef.current?.interactions?.code;
-  const qrcode = props.paymentDataRef.current?.interactions?.qrcode;
+  const pix = props.paymentDataRef.current.pix;
+
+  if (!pix) {
+    props.setScreen("payment");
+    return <></>;
+  }
 
   return (
     <div className="flex flex-col gap-8 w-[672px] font-opensans">
@@ -35,12 +39,18 @@ export default function (props: ScreenProps) {
         </div>
         <div className="text-center flex flex-col items-center justify-center w-full px-4 md:px-16 mt-8">
           {/* QR code image */}
-          {qrcode && (
-            <img className="w-1/3" src={"data:image/jpeg;base64," + qrcode} />
+          {pix.interactions.qrcode && (
+            <img
+              className="w-1/3"
+              src={"data:image/jpeg;base64," + pix.interactions.qrcode}
+            />
           )}
           {/* Copy pix code */}
           <a
-            onClick={() => code && navigator.clipboard.writeText(code)}
+            onClick={() =>
+              pix.interactions.code &&
+              navigator.clipboard.writeText(pix.interactions.code)
+            }
             className="cursor-pointer flex relative justify-center w-full md:w-3/4 border text-white bg-gray-800 font-bold p-3 text-sm rounded text-center"
           >
             <div>

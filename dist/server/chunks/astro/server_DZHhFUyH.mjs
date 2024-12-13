@@ -1,11 +1,10 @@
 import { bold } from 'kleur/colors';
-import { A as AstroError, E as EndpointDidNotReturnAResponse, I as InvalidComponentArgs, a as AstroGlobUsedOutside, b as AstroGlobNoMatch, M as MissingMediaQueryDirective, N as NoMatchingImport, O as OnlyResponseCanBeReturned, R as ResponseSentError, c as NoMatchingRenderer, d as NoClientOnlyHint, e as NoClientEntrypoint } from './assets-service_g6DNmJna.mjs';
 import { clsx } from 'clsx';
 import { escape } from 'html-escaper';
 import { decodeBase64, encodeHexUpperCase, encodeBase64, decodeHex } from '@oslojs/encoding';
 import 'cssesc';
 
-const ASTRO_VERSION = "4.16.16";
+const ASTRO_VERSION = "5.0.5";
 const REROUTE_DIRECTIVE_HEADER = "X-Astro-Reroute";
 const REWRITE_DIRECTIVE_HEADER_KEY = "X-Astro-Rewrite";
 const REWRITE_DIRECTIVE_HEADER_VALUE = "yes";
@@ -14,20 +13,350 @@ const ROUTE_TYPE_HEADER = "X-Astro-Route-Type";
 const DEFAULT_404_COMPONENT = "astro-default-404.astro";
 const REROUTABLE_STATUS_CODES = [404, 500];
 const clientAddressSymbol = Symbol.for("astro.clientAddress");
-const clientLocalsSymbol = Symbol.for("astro.locals");
 const originPathnameSymbol = Symbol.for("astro.originPathname");
 const responseSentSymbol = Symbol.for("astro.responseSent");
 
-async function renderEndpoint(mod, context, ssr, logger) {
+const ClientAddressNotAvailable = {
+  name: "ClientAddressNotAvailable",
+  title: "`Astro.clientAddress` is not available in current adapter.",
+  message: (adapterName) => `\`Astro.clientAddress\` is not available in the \`${adapterName}\` adapter. File an issue with the adapter to add support.`
+};
+const PrerenderClientAddressNotAvailable = {
+  name: "PrerenderClientAddressNotAvailable",
+  title: "`Astro.clientAddress` cannot be used inside prerendered routes.",
+  message: `\`Astro.clientAddress\` cannot be used inside prerendered routes`
+};
+const StaticClientAddressNotAvailable = {
+  name: "StaticClientAddressNotAvailable",
+  title: "`Astro.clientAddress` is not available in prerendered pages.",
+  message: "`Astro.clientAddress` is only available on pages that are server-rendered.",
+  hint: "See https://docs.astro.build/en/guides/on-demand-rendering/ for more information on how to enable SSR."
+};
+const NoMatchingStaticPathFound = {
+  name: "NoMatchingStaticPathFound",
+  title: "No static path found for requested path.",
+  message: (pathName) => `A \`getStaticPaths()\` route pattern was matched, but no matching static path was found for requested path \`${pathName}\`.`,
+  hint: (possibleRoutes) => `Possible dynamic routes being matched: ${possibleRoutes.join(", ")}.`
+};
+const OnlyResponseCanBeReturned = {
+  name: "OnlyResponseCanBeReturned",
+  title: "Invalid type returned by Astro page.",
+  message: (route, returnedValue) => `Route \`${route ? route : ""}\` returned a \`${returnedValue}\`. Only a [Response](https://developer.mozilla.org/en-US/docs/Web/API/Response) can be returned from Astro files.`,
+  hint: "See https://docs.astro.build/en/guides/on-demand-rendering/#response for more information."
+};
+const MissingMediaQueryDirective = {
+  name: "MissingMediaQueryDirective",
+  title: "Missing value for `client:media` directive.",
+  message: 'Media query not provided for `client:media` directive. A media query similar to `client:media="(max-width: 600px)"` must be provided'
+};
+const NoMatchingRenderer = {
+  name: "NoMatchingRenderer",
+  title: "No matching renderer found.",
+  message: (componentName, componentExtension, plural, validRenderersCount) => `Unable to render \`${componentName}\`.
+
+${validRenderersCount > 0 ? `There ${plural ? "are" : "is"} ${validRenderersCount} renderer${plural ? "s" : ""} configured in your \`astro.config.mjs\` file,
+but ${plural ? "none were" : "it was not"} able to server-side render \`${componentName}\`.` : `No valid renderer was found ${componentExtension ? `for the \`.${componentExtension}\` file extension.` : `for this file extension.`}`}`,
+  hint: (probableRenderers) => `Did you mean to enable the ${probableRenderers} integration?
+
+See https://docs.astro.build/en/guides/framework-components/ for more information on how to install and configure integrations.`
+};
+const NoClientOnlyHint = {
+  name: "NoClientOnlyHint",
+  title: "Missing hint on client:only directive.",
+  message: (componentName) => `Unable to render \`${componentName}\`. When using the \`client:only\` hydration strategy, Astro needs a hint to use the correct renderer.`,
+  hint: (probableRenderers) => `Did you mean to pass \`client:only="${probableRenderers}"\`? See https://docs.astro.build/en/reference/directives-reference/#clientonly for more information on client:only`
+};
+const InvalidGetStaticPathsEntry = {
+  name: "InvalidGetStaticPathsEntry",
+  title: "Invalid entry inside getStaticPath's return value",
+  message: (entryType) => `Invalid entry returned by getStaticPaths. Expected an object, got \`${entryType}\``,
+  hint: "If you're using a `.map` call, you might be looking for `.flatMap()` instead. See https://docs.astro.build/en/reference/routing-reference/#getstaticpaths for more information on getStaticPaths."
+};
+const InvalidGetStaticPathsReturn = {
+  name: "InvalidGetStaticPathsReturn",
+  title: "Invalid value returned by getStaticPaths.",
+  message: (returnType) => `Invalid type returned by \`getStaticPaths\`. Expected an \`array\`, got \`${returnType}\``,
+  hint: "See https://docs.astro.build/en/reference/routing-reference/#getstaticpaths for more information on getStaticPaths."
+};
+const GetStaticPathsExpectedParams = {
+  name: "GetStaticPathsExpectedParams",
+  title: "Missing params property on `getStaticPaths` route.",
+  message: "Missing or empty required `params` property on `getStaticPaths` route.",
+  hint: "See https://docs.astro.build/en/reference/routing-reference/#getstaticpaths for more information on getStaticPaths."
+};
+const GetStaticPathsInvalidRouteParam = {
+  name: "GetStaticPathsInvalidRouteParam",
+  title: "Invalid value for `getStaticPaths` route parameter.",
+  message: (key, value, valueType) => `Invalid getStaticPaths route parameter for \`${key}\`. Expected undefined, a string or a number, received \`${valueType}\` (\`${value}\`)`,
+  hint: "See https://docs.astro.build/en/reference/routing-reference/#getstaticpaths for more information on getStaticPaths."
+};
+const GetStaticPathsRequired = {
+  name: "GetStaticPathsRequired",
+  title: "`getStaticPaths()` function required for dynamic routes.",
+  message: "`getStaticPaths()` function is required for dynamic routes. Make sure that you `export` a `getStaticPaths` function from your dynamic route.",
+  hint: `See https://docs.astro.build/en/guides/routing/#dynamic-routes for more information on dynamic routes.
+
+	If you meant for this route to be server-rendered, set \`export const prerender = false;\` in the page.`
+};
+const ReservedSlotName = {
+  name: "ReservedSlotName",
+  title: "Invalid slot name.",
+  message: (slotName) => `Unable to create a slot named \`${slotName}\`. \`${slotName}\` is a reserved slot name. Please update the name of this slot.`
+};
+const NoMatchingImport = {
+  name: "NoMatchingImport",
+  title: "No import found for component.",
+  message: (componentName) => `Could not render \`${componentName}\`. No matching import has been found for \`${componentName}\`.`,
+  hint: "Please make sure the component is properly imported."
+};
+const InvalidComponentArgs = {
+  name: "InvalidComponentArgs",
+  title: "Invalid component arguments.",
+  message: (name) => `Invalid arguments passed to${name ? ` <${name}>` : ""} component.`,
+  hint: "Astro components cannot be rendered directly via function call, such as `Component()` or `{items.map(Component)}`."
+};
+const PageNumberParamNotFound = {
+  name: "PageNumberParamNotFound",
+  title: "Page number param not found.",
+  message: (paramName) => `[paginate()] page number param \`${paramName}\` not found in your filepath.`,
+  hint: "Rename your file to `[page].astro` or `[...page].astro`."
+};
+const ImageMissingAlt = {
+  name: "ImageMissingAlt",
+  title: 'Image missing required "alt" property.',
+  message: 'Image missing "alt" property. "alt" text is required to describe important images on the page.',
+  hint: 'Use an empty string ("") for decorative images.'
+};
+const InvalidImageService = {
+  name: "InvalidImageService",
+  title: "Error while loading image service.",
+  message: "There was an error loading the configured image service. Please see the stack trace for more information."
+};
+const MissingImageDimension = {
+  name: "MissingImageDimension",
+  title: "Missing image dimensions",
+  message: (missingDimension, imageURL) => `Missing ${missingDimension === "both" ? "width and height attributes" : `${missingDimension} attribute`} for ${imageURL}. When using remote images, both dimensions are required in order to avoid CLS.`,
+  hint: "If your image is inside your `src` folder, you probably meant to import it instead. See [the Imports guide for more information](https://docs.astro.build/en/guides/imports/#other-assets). You can also use `inferSize={true}` for remote images to get the original dimensions."
+};
+const FailedToFetchRemoteImageDimensions = {
+  name: "FailedToFetchRemoteImageDimensions",
+  title: "Failed to retrieve remote image dimensions",
+  message: (imageURL) => `Failed to get the dimensions for ${imageURL}.`,
+  hint: "Verify your remote image URL is accurate, and that you are not using `inferSize` with a file located in your `public/` folder."
+};
+const UnsupportedImageFormat = {
+  name: "UnsupportedImageFormat",
+  title: "Unsupported image format",
+  message: (format, imagePath, supportedFormats) => `Received unsupported format \`${format}\` from \`${imagePath}\`. Currently only ${supportedFormats.join(
+    ", "
+  )} are supported by our image services.`,
+  hint: "Using an `img` tag directly instead of the `Image` component might be what you're looking for."
+};
+const UnsupportedImageConversion = {
+  name: "UnsupportedImageConversion",
+  title: "Unsupported image conversion",
+  message: "Converting between vector (such as SVGs) and raster (such as PNGs and JPEGs) images is not currently supported."
+};
+const PrerenderDynamicEndpointPathCollide = {
+  name: "PrerenderDynamicEndpointPathCollide",
+  title: "Prerendered dynamic endpoint has path collision.",
+  message: (pathname) => `Could not render \`${pathname}\` with an \`undefined\` param as the generated path will collide during prerendering. Prevent passing \`undefined\` as \`params\` for the endpoint's \`getStaticPaths()\` function, or add an additional extension to the endpoint's filename.`,
+  hint: (filename) => `Rename \`${filename}\` to \`${filename.replace(/\.(?:js|ts)/, (m) => `.json` + m)}\``
+};
+const ExpectedImage = {
+  name: "ExpectedImage",
+  title: "Expected src to be an image.",
+  message: (src, typeofOptions, fullOptions) => `Expected \`src\` property for \`getImage\` or \`<Image />\` to be either an ESM imported image or a string with the path of a remote image. Received \`${src}\` (type: \`${typeofOptions}\`).
+
+Full serialized options received: \`${fullOptions}\`.`,
+  hint: "This error can often happen because of a wrong path. Make sure the path to your image is correct. If you're passing an async function, make sure to call and await it."
+};
+const ExpectedImageOptions = {
+  name: "ExpectedImageOptions",
+  title: "Expected image options.",
+  message: (options) => `Expected getImage() parameter to be an object. Received \`${options}\`.`
+};
+const ExpectedNotESMImage = {
+  name: "ExpectedNotESMImage",
+  title: "Expected image options, not an ESM-imported image.",
+  message: "An ESM-imported image cannot be passed directly to `getImage()`. Instead, pass an object with the image in the `src` property.",
+  hint: "Try changing `getImage(myImage)` to `getImage({ src: myImage })`"
+};
+const IncompatibleDescriptorOptions = {
+  name: "IncompatibleDescriptorOptions",
+  title: "Cannot set both `densities` and `widths`",
+  message: "Only one of `densities` or `widths` can be specified. In most cases, you'll probably want to use only `widths` if you require specific widths.",
+  hint: "Those attributes are used to construct a `srcset` attribute, which cannot have both `x` and `w` descriptors."
+};
+const NoImageMetadata = {
+  name: "NoImageMetadata",
+  title: "Could not process image metadata.",
+  message: (imagePath) => `Could not process image metadata${imagePath ? ` for \`${imagePath}\`` : ""}.`,
+  hint: "This is often caused by a corrupted or malformed image. Re-exporting the image from your image editor may fix this issue."
+};
+const ResponseSentError = {
+  name: "ResponseSentError",
+  title: "Unable to set response.",
+  message: "The response has already been sent to the browser and cannot be altered."
+};
+const MiddlewareNoDataOrNextCalled = {
+  name: "MiddlewareNoDataOrNextCalled",
+  title: "The middleware didn't return a `Response`.",
+  message: "Make sure your middleware returns a `Response` object, either directly or by returning the `Response` from calling the `next` function."
+};
+const MiddlewareNotAResponse = {
+  name: "MiddlewareNotAResponse",
+  title: "The middleware returned something that is not a `Response` object.",
+  message: "Any data returned from middleware must be a valid `Response` object."
+};
+const EndpointDidNotReturnAResponse = {
+  name: "EndpointDidNotReturnAResponse",
+  title: "The endpoint did not return a `Response`.",
+  message: "An endpoint must return either a `Response`, or a `Promise` that resolves with a `Response`."
+};
+const LocalsNotAnObject = {
+  name: "LocalsNotAnObject",
+  title: "Value assigned to `locals` is not accepted.",
+  message: "`locals` can only be assigned to an object. Other values like numbers, strings, etc. are not accepted.",
+  hint: "If you tried to remove some information from the `locals` object, try to use `delete` or set the property to `undefined`."
+};
+const LocalsReassigned = {
+  name: "LocalsReassigned",
+  title: "`locals` must not be reassigned.",
+  message: "`locals` can not be assigned directly.",
+  hint: "Set a `locals` property instead."
+};
+const AstroResponseHeadersReassigned = {
+  name: "AstroResponseHeadersReassigned",
+  title: "`Astro.response.headers` must not be reassigned.",
+  message: "Individual headers can be added to and removed from `Astro.response.headers`, but it must not be replaced with another instance of `Headers` altogether.",
+  hint: "Consider using `Astro.response.headers.add()`, and `Astro.response.headers.delete()`."
+};
+const LocalImageUsedWrongly = {
+  name: "LocalImageUsedWrongly",
+  title: "Local images must be imported.",
+  message: (imageFilePath) => `\`Image\`'s and \`getImage\`'s \`src\` parameter must be an imported image or an URL, it cannot be a string filepath. Received \`${imageFilePath}\`.`,
+  hint: "If you want to use an image from your `src` folder, you need to either import it or if the image is coming from a content collection, use the [image() schema helper](https://docs.astro.build/en/guides/images/#images-in-content-collections). See https://docs.astro.build/en/guides/images/#src-required for more information on the `src` property."
+};
+const AstroGlobUsedOutside = {
+  name: "AstroGlobUsedOutside",
+  title: "Astro.glob() used outside of an Astro file.",
+  message: (globStr) => `\`Astro.glob(${globStr})\` can only be used in \`.astro\` files. \`import.meta.glob(${globStr})\` can be used instead to achieve a similar result.`,
+  hint: "See Vite's documentation on `import.meta.glob` for more information: https://vite.dev/guide/features.html#glob-import"
+};
+const AstroGlobNoMatch = {
+  name: "AstroGlobNoMatch",
+  title: "Astro.glob() did not match any files.",
+  message: (globStr) => `\`Astro.glob(${globStr})\` did not return any matching files.`,
+  hint: "Check the pattern for typos."
+};
+const MissingSharp = {
+  name: "MissingSharp",
+  title: "Could not find Sharp.",
+  message: "Could not find Sharp. Please install Sharp (`sharp`) manually into your project or migrate to another image service.",
+  hint: "See Sharp's installation instructions for more information: https://sharp.pixelplumbing.com/install. If you are not relying on `astro:assets` to optimize, transform, or process any images, you can configure a passthrough image service instead of installing Sharp. See https://docs.astro.build/en/reference/errors/missing-sharp for more information.\n\nSee https://docs.astro.build/en/guides/images/#default-image-service for more information on how to migrate to another image service."
+};
+const i18nNoLocaleFoundInPath = {
+  name: "i18nNoLocaleFoundInPath",
+  title: "The path doesn't contain any locale",
+  message: "You tried to use an i18n utility on a path that doesn't contain any locale. You can use `pathHasLocale` first to determine if the path has a locale."
+};
+const RewriteWithBodyUsed = {
+  name: "RewriteWithBodyUsed",
+  title: "Cannot use Astro.rewrite after the request body has been read",
+  message: "Astro.rewrite() cannot be used if the request body has already been read. If you need to read the body, first clone the request."
+};
+const ForbiddenRewrite = {
+  name: "ForbiddenRewrite",
+  title: "Forbidden rewrite to a static route.",
+  message: (from, to, component) => `You tried to rewrite the on-demand route '${from}' with the static route '${to}', when using the 'server' output. 
+
+The static route '${to}' is rendered by the component
+'${component}', which is marked as prerendered. This is a forbidden operation because during the build the component '${component}' is compiled to an
+HTML file, which can't be retrieved at runtime by Astro.`,
+  hint: (component) => `Add \`export const prerender = false\` to the component '${component}', or use a Astro.redirect().`
+};
+
+function normalizeLF(code) {
+  return code.replace(/\r\n|\r(?!\n)|\n/g, "\n");
+}
+
+function codeFrame(src, loc) {
+  if (!loc || loc.line === void 0 || loc.column === void 0) {
+    return "";
+  }
+  const lines = normalizeLF(src).split("\n").map((ln) => ln.replace(/\t/g, "  "));
+  const visibleLines = [];
+  for (let n = -2; n <= 2; n++) {
+    if (lines[loc.line + n]) visibleLines.push(loc.line + n);
+  }
+  let gutterWidth = 0;
+  for (const lineNo of visibleLines) {
+    let w = `> ${lineNo}`;
+    if (w.length > gutterWidth) gutterWidth = w.length;
+  }
+  let output = "";
+  for (const lineNo of visibleLines) {
+    const isFocusedLine = lineNo === loc.line - 1;
+    output += isFocusedLine ? "> " : "  ";
+    output += `${lineNo + 1} | ${lines[lineNo]}
+`;
+    if (isFocusedLine)
+      output += `${Array.from({ length: gutterWidth }).join(" ")}  | ${Array.from({
+        length: loc.column
+      }).join(" ")}^
+`;
+  }
+  return output;
+}
+
+class AstroError extends Error {
+  loc;
+  title;
+  hint;
+  frame;
+  type = "AstroError";
+  constructor(props, options) {
+    const { name, title, message, stack, location, hint, frame } = props;
+    super(message, options);
+    this.title = title;
+    this.name = name;
+    if (message) this.message = message;
+    this.stack = stack ? stack : this.stack;
+    this.loc = location;
+    this.hint = hint;
+    this.frame = frame;
+  }
+  setLocation(location) {
+    this.loc = location;
+  }
+  setName(name) {
+    this.name = name;
+  }
+  setMessage(message) {
+    this.message = message;
+  }
+  setHint(hint) {
+    this.hint = hint;
+  }
+  setFrame(source, location) {
+    this.frame = codeFrame(source, location);
+  }
+  static is(err) {
+    return err.type === "AstroError";
+  }
+}
+
+async function renderEndpoint(mod, context, isPrerendered, logger) {
   const { request, url } = context;
   const method = request.method.toUpperCase();
   const handler = mod[method] ?? mod["ALL"];
-  if (!ssr && ssr === false && method !== "GET") {
+  if (isPrerendered && method !== "GET") {
     logger.warn(
       "router",
       `${url.pathname} ${bold(
         method
-      )} requests are not available for a static site. Update your config to \`output: 'server'\` or \`output: 'hybrid'\` to enable.`
+      )} requests are not available in static endpoints. Mark this page as server-rendered (\`export const prerender = false;\`) or update your config to \`output: 'server'\` to make all your pages server-rendered by default.`
     );
   }
   if (handler === void 0) {
@@ -102,6 +431,8 @@ function createComponent(arg1, moduleId, propagation) {
 
 function createAstroGlobFn() {
   const globHandler = (importMetaGlobResult) => {
+    console.warn(`Astro.glob is deprecated and will be removed in a future major version of Astro.
+Use import.meta.glob instead: https://vitejs.dev/guide/features.html#glob-import`);
     if (typeof importMetaGlobResult === "string") {
       throw new AstroError({
         ...AstroGlobUsedOutside,
@@ -421,7 +752,9 @@ async function generateHydrateScript(scriptOptions, metadata) {
   island.props["component-url"] = await result.resolve(decodeURI(componentUrl));
   if (renderer.clientEntrypoint) {
     island.props["component-export"] = componentExport.value;
-    island.props["renderer-url"] = await result.resolve(decodeURI(renderer.clientEntrypoint));
+    island.props["renderer-url"] = await result.resolve(
+      decodeURI(renderer.clientEntrypoint.toString())
+    );
     island.props["props"] = escapeHTML(serializeProps(props, metadata));
   }
   island.props["ssr"] = "";
@@ -557,8 +890,6 @@ function getPrescripts(result, type, directive) {
 
 const voidElementNames = /^(area|base|br|col|command|embed|hr|img|input|keygen|link|meta|param|source|track|wbr)$/i;
 const htmlBooleanAttributes = /^(?:allowfullscreen|async|autofocus|autoplay|checked|controls|default|defer|disabled|disablepictureinpicture|disableremoteplayback|formnovalidate|hidden|loop|nomodule|novalidate|open|playsinline|readonly|required|reversed|scoped|seamless|selected|itemscope)$/i;
-const htmlEnumAttributes = /^(?:contenteditable|draggable|spellcheck|value)$/i;
-const svgEnumAttributes = /^(?:autoReverse|externalResourcesRequired|focusable|preserveAlpha)$/i;
 const AMPERSAND_REGEX = /&/g;
 const DOUBLE_QUOTE_REGEX = /"/g;
 const STATIC_DIRECTIVES = /* @__PURE__ */ new Set(["set:html", "set:text"]);
@@ -593,12 +924,6 @@ function addAttribute(value, key, shouldEscape = true) {
   if (value == null) {
     return "";
   }
-  if (value === false) {
-    if (htmlEnumAttributes.test(key) || svgEnumAttributes.test(key)) {
-      return markHTMLString(` ${key}="false"`);
-    }
-    return "";
-  }
   if (STATIC_DIRECTIVES.has(key)) {
     console.warn(`[astro] The "${key}" directive cannot be applied dynamically at runtime. It will not be rendered as an attribute.
 
@@ -628,11 +953,13 @@ Make sure to use the static attribute syntax (\`${key}={value}\`) instead of the
   if (typeof value === "string" && value.includes("&") && isHttpUrl(value)) {
     return markHTMLString(` ${key}="${toAttributeString(value, false)}"`);
   }
-  if (value === true && (key.startsWith("data-") || htmlBooleanAttributes.test(key))) {
-    return markHTMLString(` ${key}`);
-  } else {
-    return markHTMLString(` ${key}="${toAttributeString(value, shouldEscape)}"`);
+  if (htmlBooleanAttributes.test(key)) {
+    return markHTMLString(value ? ` ${key}` : "");
   }
+  if (value === "") {
+    return markHTMLString(` ${key}`);
+  }
+  return markHTMLString(` ${key}="${toAttributeString(value, shouldEscape)}"`);
 }
 function internalSpreadAttributes(values, shouldEscape = true) {
   let output = "";
@@ -1335,6 +1662,18 @@ function containsServerDirective(props) {
 function safeJsonStringify(obj) {
   return JSON.stringify(obj).replace(/\u2028/g, "\\u2028").replace(/\u2029/g, "\\u2029").replace(/</g, "\\u003c").replace(/>/g, "\\u003e").replace(/\//g, "\\u002f");
 }
+function createSearchParams(componentExport, encryptedProps, slots) {
+  const params = new URLSearchParams();
+  params.set("e", componentExport);
+  params.set("p", encryptedProps);
+  params.set("s", slots);
+  return params;
+}
+function isWithinURLLimit(pathname, params) {
+  const url = pathname + "?" + params.toString();
+  const chars = url.length;
+  return chars < 2048;
+}
 function renderServerIsland(result, _displayName, props, slots) {
   return {
     async render(destination) {
@@ -1363,13 +1702,30 @@ function renderServerIsland(result, _displayName, props, slots) {
       const propsEncrypted = await encryptString(key, JSON.stringify(props));
       const hostId = crypto.randomUUID();
       const slash = result.base.endsWith("/") ? "" : "/";
-      const serverIslandUrl = `${result.base}${slash}_server-islands/${componentId}${result.trailingSlash === "always" ? "/" : ""}`;
+      let serverIslandUrl = `${result.base}${slash}_server-islands/${componentId}${result.trailingSlash === "always" ? "/" : ""}`;
+      const potentialSearchParams = createSearchParams(
+        componentExport,
+        propsEncrypted,
+        safeJsonStringify(renderedSlots)
+      );
+      const useGETRequest = isWithinURLLimit(serverIslandUrl, potentialSearchParams);
+      if (useGETRequest) {
+        serverIslandUrl += "?" + potentialSearchParams.toString();
+        destination.write(
+          `<link rel="preload" as="fetch" href="${serverIslandUrl}" crossorigin="anonymous">`
+        );
+      }
       destination.write(`<script async type="module" data-island-id="${hostId}">
-let componentId = ${safeJsonStringify(componentId)};
-let componentExport = ${safeJsonStringify(componentExport)};
 let script = document.querySelector('script[data-island-id="${hostId}"]');
-let data = {
-	componentExport,
+
+${useGETRequest ? (
+        // GET request
+        `let response = await fetch('${serverIslandUrl}');
+`
+      ) : (
+        // POST request
+        `let data = {
+	componentExport: ${safeJsonStringify(componentExport)},
 	encryptedProps: ${safeJsonStringify(propsEncrypted)},
 	slots: ${safeJsonStringify(renderedSlots)},
 };
@@ -1378,22 +1734,24 @@ let response = await fetch('${serverIslandUrl}', {
 	method: 'POST',
 	body: JSON.stringify(data),
 });
+`
+      )}
 if (script) {
 	if(response.status === 200 && response.headers.get('content-type') === 'text/html') {
-	let html = await response.text();
-
-	// Swap!
-	while(script.previousSibling &&
-		script.previousSibling.nodeType !== 8 &&
-		script.previousSibling.data !== '[if astro]>server-island-start<![endif]') {
-		script.previousSibling.remove();
+		let html = await response.text();
+	
+		// Swap!
+		while(script.previousSibling &&
+			script.previousSibling.nodeType !== 8 &&
+			script.previousSibling.data !== '[if astro]>server-island-start<![endif]') {
+			script.previousSibling.remove();
+		}
+		script.previousSibling?.remove();
+	
+		let frag = document.createRange().createContextualFragment(html);
+		script.before(frag);
 	}
-	script.previousSibling?.remove();
-
-	let frag = document.createRange().createContextualFragment(html);
-	script.before(frag);
-}
-script.remove();
+	script.remove();
 }
 </script>`);
     }
@@ -1402,7 +1760,7 @@ script.remove();
 
 const needsHeadRenderingSymbol = Symbol.for("astro.needsHeadRendering");
 const rendererAliases = /* @__PURE__ */ new Map([["solid", "solid-js"]]);
-const clientOnlyValues = /* @__PURE__ */ new Set(["solid-js", "react", "preact", "vue", "svelte", "lit"]);
+const clientOnlyValues = /* @__PURE__ */ new Set(["solid-js", "react", "preact", "vue", "svelte"]);
 function guessRenderers(componentUrl) {
   const extname = componentUrl?.split(".").pop();
   switch (extname) {
@@ -1420,8 +1778,7 @@ function guessRenderers(componentUrl) {
         "@astrojs/preact",
         "@astrojs/solid-js",
         "@astrojs/vue",
-        "@astrojs/svelte",
-        "@astrojs/lit"
+        "@astrojs/svelte"
       ];
   }
 }
@@ -1591,12 +1948,6 @@ If you're still stuck, please open an issue on GitHub or join us at https://astr
     }
   } else {
     if (metadata.hydrate === "only") {
-      const rendererName = rendererAliases.has(metadata.hydrateArgs) ? rendererAliases.get(metadata.hydrateArgs) : metadata.hydrateArgs;
-      if (!clientOnlyValues.has(rendererName)) {
-        console.warn(
-          `The client:only directive for ${metadata.displayName} is not recognized. The renderer ${renderer.name} will be used. If you intended to use a different renderer, please provide a valid client:only directive.`
-        );
-      }
       html = await renderSlotToString(result, slots?.fallback);
     } else {
       const componentRenderStartTime = performance.now();
@@ -1610,16 +1961,6 @@ If you're still stuck, please open an issue on GitHub or join us at https://astr
       if (process.env.NODE_ENV === "development")
         componentServerRenderEndTime = performance.now() - componentRenderStartTime;
     }
-  }
-  if (renderer && !renderer.clientEntrypoint && renderer.name !== "@astrojs/lit" && metadata.hydrate) {
-    throw new AstroError({
-      ...NoClientEntrypoint,
-      message: NoClientEntrypoint.message(
-        displayName,
-        metadata.hydrate,
-        renderer.name
-      )
-    });
   }
   if (!html && typeof Component === "string") {
     const Tag = sanitizeElementName(Component);
@@ -1985,7 +2326,7 @@ async function renderPage(result, componentFactory, props, children, streaming, 
     const bytes = encoder$1.encode(str);
     return new Response(bytes, {
       headers: new Headers([
-        ["Content-Type", "text/html; charset=utf-8"],
+        ["Content-Type", "text/html"],
         ["Content-Length", bytes.byteLength.toString()]
       ])
     });
@@ -2015,9 +2356,6 @@ async function renderPage(result, componentFactory, props, children, streaming, 
   if (!streaming && typeof body === "string") {
     body = encoder$1.encode(body);
     headers.set("Content-Length", body.byteLength.toString());
-  }
-  if (route?.component.endsWith(".md")) {
-    headers.set("Content-Type", "text/html; charset=utf-8");
   }
   let status = init.status;
   if (route?.route === "/404") {
@@ -2052,4 +2390,4 @@ function spreadAttributes(values = {}, _name, { class: scopedClassName } = {}) {
   return markHTMLString(output);
 }
 
-export { ASTRO_VERSION as A, DEFAULT_404_COMPONENT as D, NOOP_MIDDLEWARE_HEADER as N, ROUTE_TYPE_HEADER as R, addAttribute as a, createAstro as b, createComponent as c, renderSlot as d, renderHead as e, renderComponent as f, decodeKey as g, REROUTE_DIRECTIVE_HEADER as h, decryptString as i, createSlotValueFromString as j, renderSlotToString as k, renderJSX as l, maybeRenderHead as m, chunkToString as n, isRenderInstruction as o, originPathnameSymbol as p, clientLocalsSymbol as q, renderTemplate as r, spreadAttributes as s, clientAddressSymbol as t, responseSentSymbol as u, renderPage as v, REWRITE_DIRECTIVE_HEADER_KEY as w, REWRITE_DIRECTIVE_HEADER_VALUE as x, renderEndpoint as y, REROUTABLE_STATUS_CODES as z };
+export { clientAddressSymbol as $, AstroError as A, GetStaticPathsInvalidRouteParam as B, decryptString as C, createSlotValueFromString as D, ExpectedImage as E, FailedToFetchRemoteImageDimensions as F, GetStaticPathsRequired as G, isAstroComponentFactory as H, IncompatibleDescriptorOptions as I, DEFAULT_404_COMPONENT as J, NoMatchingStaticPathFound as K, LocalImageUsedWrongly as L, MissingImageDimension as M, NoImageMetadata as N, PrerenderDynamicEndpointPathCollide as O, PageNumberParamNotFound as P, ReservedSlotName as Q, ROUTE_TYPE_HEADER as R, renderSlotToString as S, renderJSX as T, UnsupportedImageFormat as U, chunkToString as V, isRenderInstruction as W, ForbiddenRewrite as X, LocalsReassigned as Y, AstroResponseHeadersReassigned as Z, PrerenderClientAddressNotAvailable as _, UnsupportedImageConversion as a, ClientAddressNotAvailable as a0, StaticClientAddressNotAvailable as a1, ASTRO_VERSION as a2, responseSentSymbol as a3, renderPage as a4, REWRITE_DIRECTIVE_HEADER_KEY as a5, REWRITE_DIRECTIVE_HEADER_VALUE as a6, renderEndpoint as a7, LocalsNotAnObject as a8, REROUTABLE_STATUS_CODES as a9, NOOP_MIDDLEWARE_HEADER as aa, MissingSharp as ab, ExpectedImageOptions as b, ExpectedNotESMImage as c, InvalidImageService as d, createComponent as e, ImageMissingAlt as f, addAttribute as g, createAstro as h, renderSlot as i, renderHead as j, renderComponent as k, decodeKey as l, maybeRenderHead as m, REROUTE_DIRECTIVE_HEADER as n, i18nNoLocaleFoundInPath as o, ResponseSentError as p, MiddlewareNoDataOrNextCalled as q, renderTemplate as r, spreadAttributes as s, toStyleString as t, MiddlewareNotAResponse as u, RewriteWithBodyUsed as v, originPathnameSymbol as w, InvalidGetStaticPathsReturn as x, InvalidGetStaticPathsEntry as y, GetStaticPathsExpectedParams as z };

@@ -1,6 +1,6 @@
-import { p as products } from '../../chunks/products_BQsGa0Z_.mjs';
+import { p as products } from '../../chunks/products_oRNW7Rs9.mjs';
 import { s as sendEmbedToWebhook } from '../../chunks/discordwebhook_BjaVtYvQ.mjs';
-import { E as EMPTY_PRODUCT, m as mercado, s as session, w as watchPurchase } from '../../chunks/purchase_B9qVe14n.mjs';
+import { E as EMPTY_PRODUCT, m as mercado, s as session, w as watchPurchase } from '../../chunks/purchase_D7wy5O5a.mjs';
 export { renderers } from '../../renderers.mjs';
 
 const prerender = false;
@@ -39,7 +39,7 @@ const POST = async ({ request }) => {
       transaction_amount: product.price,
       installments: 1,
       // TODO: use choosed one
-      description: `compra de ${product.name}`,
+      description: `Comprando: ${product.name} na Kiwify.`,
       token: payload.card_token_id,
       payer: {
         email: payload.payer_email

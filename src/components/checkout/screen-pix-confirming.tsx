@@ -6,13 +6,20 @@ import type { ScreenProps } from ".";
 import type { Payment } from "../../services/mercadopago/lib";
 
 export default function (props: ScreenProps) {
+  const pix = props.paymentDataRef.current.pix;
+
+  if (!pix) {
+    props.setScreen("payment");
+    return <></>;
+  }
+
+  const id = pix.id;
+
   const [finished, setFinished] = useState(false);
   const timerRef = useRef<HTMLSpanElement>(null);
 
   async function checkPaymentStatus(interval: NodeJS.Timeout) {
-    const response = await fetch(
-      "/api/status?id=" + props.paymentDataRef.current?.id,
-    );
+    const response = await fetch("/api/status?id=" + id);
 
     const updated: { status: Payment["status"]; finished: boolean } =
       await response.json();
@@ -85,9 +92,7 @@ export default function (props: ScreenProps) {
               </div>
             </div>
             <div>
-              <div className="text-center text-lg text-gray-700">
-                ID: {props.paymentDataRef.current?.id}
-              </div>{" "}
+              <div className="text-center text-lg text-gray-700">ID: {id}</div>{" "}
               <a
                 href="mailto:suporte@kiwify.com.br"
                 className="flex hover:no-underline relative justify-center w-full text-blue-700 underline font-bold p-3 text-base rounded text-center"
@@ -128,19 +133,18 @@ export default function (props: ScreenProps) {
                 </p>
               </div>
             </div>
-            {props.paymentDataRef.current?.kind == "pix" && (
-              <div>
-                <div className="text-center text-lg text-gray-700">
-                  Ainda não fez o pagamento?
-                </div>{" "}
-                <a
-                  onClick={() => props.setScreen("pix_scanning")}
-                  className="cursor-pointer flex hover:no-underline relative justify-center w-full text-blue-700 underline font-bold p-3 text-base rounded text-center"
-                >
-                  PAGUE AGORA COM PIX
-                </a>
-              </div>
-            )}
+            <div>
+              <div className="text-center text-lg text-gray-700">
+                Ainda não fez o pagamento?
+              </div>{" "}
+              <a
+                onClick={() => props.setScreen("pix_scanning")}
+                className="cursor-pointer flex hover:no-underline relative justify-center w-full text-blue-700 underline font-bold p-3 text-base rounded text-center"
+              >
+                PAGUE AGORA COM PIX
+              </a>
+            </div>
+
             <div className="px-4">
               <div className="flex text-xl font-bold border-t flex-row p-4 mt-4">
                 <div className="flex-1">TOTAL</div>{" "}

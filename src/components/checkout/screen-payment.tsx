@@ -5,7 +5,11 @@ import NewInput from "../NewInput";
 import NewSubmit from "../NewSubmit";
 import Tab from "../Tab";
 import validators from "../validators";
-import { createCardPayment, createPIXPayment } from "./apihelpers";
+import {
+  createBoletoPayment,
+  createCardPayment,
+  createPIXPayment,
+} from "./apihelpers";
 import { BoletoView, CardView, PixView } from "./screen-payment-views";
 
 function validateForm(form: any, flags: { check_card_infos: boolean }) {
@@ -29,12 +33,15 @@ export default function (props: ScreenProps) {
     const form = props.formValuesRef.current;
 
     const valid = validateForm(form, {
+      // validate card if the tab is the first (card paying)
       check_card_infos: form.tab == 0,
     });
 
+    // scroll to inputs if anything is incorrect
     if (!valid) return window.scrollTo({ top: 0, behavior: "smooth" });
 
     if (form.tab == 0) {
+      // card pay tab
       const payment = await createCardPayment({
         payer_name: form.name,
         payer_email: form.email,
@@ -47,10 +54,22 @@ export default function (props: ScreenProps) {
       });
 
       console.log("[SUBMIT] card payment got:", payment);
-      props.paymentDataRef.current = payment;
+      props.paymentDataRef.current.card = payment;
 
-      props.setScreen("pix_confirming");
+      alert("Mensagem do banco: " + "ID(" + payment.id + ") " + payment.status);
+    } else if (form.tab == 1) {
+      // boleto pay tab
+      const payment = await createBoletoPayment({
+        product_id: props.product.id,
+        payer_fullname: form.name,
+        payer_email: form.email,
+        payer_cpf: form.cpf,
+      });
+
+      props.paymentDataRef.current.boleto = payment;
+      props.setScreen("boleto_confirming");
     } else if (form.tab == 2) {
+      // pix pay tab
       const payment = await createPIXPayment({
         payer_name: form.name,
         payer_email: form.email,
@@ -58,7 +77,7 @@ export default function (props: ScreenProps) {
         product_id: props.product.id,
       });
 
-      props.paymentDataRef.current = payment;
+      props.paymentDataRef.current.pix = payment;
       props.setScreen("pix_scanning");
     }
   }

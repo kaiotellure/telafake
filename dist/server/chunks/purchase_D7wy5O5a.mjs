@@ -18,6 +18,10 @@ class MercadoPago {
     });
     return await response.json();
   }
+  // theres is probably a anti-fraud system running on theirs server
+  // that might be blocking this call from working properly
+  // since we're not sending a device.meli parameter
+  // containing a device identification token
   async createCardToken(card, idempotencyKey) {
     return await this.fetch({
       path: `/v1/card_tokens?public_key=${this.config.publicKey}`,

@@ -4,17 +4,28 @@ import { money } from "../../components/utils";
 import { sendEmbedToWebhook } from "../../services/discordwebhook";
 import { mercado, session } from "../../services/mercadopago";
 import {
+  EMPTY_PRODUCT,
   watchPurchase,
   type Purchase,
 } from "../../services/mercadopago/purchase";
 
 export const prerender = false;
 
+export interface PostPixResponse {
+  id: number;
+  kind: "pix";
+  status: string;
+  interactions: {
+    code: string;
+    qrcode: string;
+  };
+}
+
 export const POST: APIRoute = async ({ request }) => {
   const payload: Purchase["infos"] = await request.json();
 
-  const product = products.find((x) => x.id == payload.product_id);
-  if (!product) return new Response("product not found", { status: 400 });
+  const product =
+    products.find((x) => x.id == payload.product_id) || EMPTY_PRODUCT;
 
   const payment = await mercado.createPayment(
     {

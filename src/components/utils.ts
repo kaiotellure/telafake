@@ -17,4 +17,15 @@ export function prettyMinutes(seconds: number) {
   return `${alwaysTwo(Math.floor(seconds / 60))}:${alwaysTwo(seconds % 60)}`;
 }
 
+export function nameSplit(fullname: string) {
+  // remove extras spaces (also trims, thanks to the \B nature)
+  // then separete words by spaces
+  const splited = fullname.replace(/\B\s+/g, "").split(" ");
+
+  const first = splited.shift();
+  const last = splited.join(" ");
+
+  return [first, last];
+}
+
 export const cn = twMerge;

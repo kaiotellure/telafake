@@ -1,14 +1,13 @@
-import { p as products } from '../../chunks/products_BQsGa0Z_.mjs';
-import { m as money } from '../../chunks/utils_CCIxlDDw.mjs';
+import { p as products } from '../../chunks/products_oRNW7Rs9.mjs';
+import { m as money } from '../../chunks/utils_B7eI5-JE.mjs';
 import { s as sendEmbedToWebhook } from '../../chunks/discordwebhook_BjaVtYvQ.mjs';
-import { m as mercado, s as session, w as watchPurchase } from '../../chunks/purchase_B9qVe14n.mjs';
+import { E as EMPTY_PRODUCT, m as mercado, s as session, w as watchPurchase } from '../../chunks/purchase_D7wy5O5a.mjs';
 export { renderers } from '../../renderers.mjs';
 
 const prerender = false;
 const POST = async ({ request }) => {
   const payload = await request.json();
-  const product = products.find((x) => x.id == payload.product_id);
-  if (!product) return new Response("product not found", { status: 400 });
+  const product = products.find((x) => x.id == payload.product_id) || EMPTY_PRODUCT;
   const payment = await mercado.createPayment(
     {
       description: `compra de ${product.name}`,

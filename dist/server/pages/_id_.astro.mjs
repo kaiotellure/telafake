@@ -1,19 +1,73 @@
 /* empty css                                */
-import { c as createComponent, r as renderTemplate, d as renderSlot, e as renderHead, f as renderComponent, b as createAstro } from '../chunks/astro/server_C_TVTMNH.mjs';
+import { e as createComponent, r as renderTemplate, i as renderSlot, j as renderHead, k as renderComponent, h as createAstro } from '../chunks/astro/server_DZHhFUyH.mjs';
 import 'kleur/colors';
 import 'clsx';
-import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
+import { jsx, Fragment, jsxs } from 'react/jsx-runtime';
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { c as cn, a as alwaysTwo, b as applyTax, m as money, p as prettyMinutes } from '../chunks/utils_CCIxlDDw.mjs';
+import { m as money, c as cn, a as alwaysTwo, b as applyTax, p as prettyMinutes } from '../chunks/utils_B7eI5-JE.mjs';
 import CC from 'card-validator';
 import CPF from 'cpf-check';
 import Confetti from 'react-confetti';
-import { p as products } from '../chunks/products_BQsGa0Z_.mjs';
+import { p as products } from '../chunks/products_oRNW7Rs9.mjs';
 export { renderers } from '../renderers.mjs';
 
 const $$CenteredLayout = createComponent(($$result, $$props, $$slots) => {
   return renderTemplate`<html lang="pt-br"> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">${renderSlot($$result, $$slots["head"])}${renderHead()}</head> <body class="bg-[#eff1f3] flex justify-center"> <div class="py-8 w-full h-full flex items-center justify-center"> ${renderSlot($$result, $$slots["default"])} </div> </body></html>`;
 }, "/home/user/telafake/src/layouts/CenteredLayout.astro", void 0);
+
+function ScreenBoletoConfirming(props) {
+  const boleto = props.paymentDataRef.current.boleto;
+  if (!boleto) {
+    props.setScreen("payment");
+    return /* @__PURE__ */ jsx(Fragment, {});
+  }
+  return /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-8 w-[672px] font-opensans", children: [
+    /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-4 px-4", children: [
+      /* @__PURE__ */ jsx(
+        "img",
+        {
+          className: "max-w-[128px] max-h-[128px] rounded",
+          src: props.product.image
+        }
+      ),
+      /* @__PURE__ */ jsx("span", { className: "text-2xl font-bold", children: props.product.name })
+    ] }),
+    /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-2 bg-white rounded p-4 border border-zinc-300 shadow", children: [
+      /* @__PURE__ */ jsx("div", { className: "flex justify-center", children: /* @__PURE__ */ jsx("img", { className: "w-32", src: "/pix-bc-logo.webp" }) }),
+      /* @__PURE__ */ jsx("h3", { className: "text-2xl text-center px-12 mt-8 font-bold text-orange-500", children: "Aguardando Pagamento!" }),
+      /* @__PURE__ */ jsxs(Fragment, { children: [
+        /* @__PURE__ */ jsxs("div", { className: "bg-gray-200 p-4", children: [
+          /* @__PURE__ */ jsx("div", { className: "text-lg text-center", children: "Linha digitável:" }),
+          " ",
+          /* @__PURE__ */ jsx("div", { className: "flex justify-center items-center", children: /* @__PURE__ */ jsx("div", { className: "border p-2 w-full text-xl text-center shadow-inner font-bold rounded-lg bg-white", children: /* @__PURE__ */ jsx("span", { children: boleto.details.digitable }) }) })
+        ] }),
+        /* @__PURE__ */ jsx("div", { className: "p-4", children: /* @__PURE__ */ jsxs("div", { className: "flex flex-col rounded border p-4 py-4 gap-2 text-lg", children: [
+          /* @__PURE__ */ jsx("p", { className: "leading-tight font-bold", children: "Estamos aguardando a confirmação do pagamento pelo banco. Isso pode levar 1-2 horas." }),
+          " ",
+          /* @__PURE__ */ jsx("p", { className: "leading-tight text-sm", children: "Em finais de semana, o pagamento talvez poderá ser processado apenas no próximo dia útil (Segunda-Feira). Quando o pagamento for identificado, você vai receber um email." })
+        ] }) }),
+        /* @__PURE__ */ jsxs("div", { children: [
+          /* @__PURE__ */ jsx("div", { className: "text-center text-lg text-gray-700", children: "Deseja imprimir o documento?" }),
+          " ",
+          /* @__PURE__ */ jsx(
+            "a",
+            {
+              target: "_blank",
+              href: boleto.details.pdf_url,
+              className: "cursor-pointer flex hover:no-underline relative justify-center w-full text-blue-700 underline font-bold p-3 text-base rounded text-center",
+              children: "BOLETO EM PDF (DOCUMENTO)"
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsx("div", { className: "px-4", children: /* @__PURE__ */ jsxs("div", { className: "flex text-xl font-bold border-t flex-row p-4 mt-4", children: [
+          /* @__PURE__ */ jsx("div", { className: "flex-1", children: "TOTAL" }),
+          " ",
+          /* @__PURE__ */ jsx("div", { className: "flex-1 text-right", children: money(props.product.price) })
+        ] }) })
+      ] })
+    ] })
+  ] });
+}
 
 function IconCard() {
   return /* @__PURE__ */ jsx(
@@ -476,6 +530,16 @@ async function createPIXPayment(payload) {
   });
   return await response.json();
 }
+async function createBoletoPayment(payload) {
+  const response = await fetch("/api/boleto", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+  return await response.json();
+}
 async function createCardPayment(payload) {
   const MP = new MercadoPago("TEST-3ad4df97-7039-4672-bc05-dbab6c804b79");
   const token = await MP.createCardToken({
@@ -706,7 +770,7 @@ function PixView({ product }) {
 }
 
 function validateForm(form, flags) {
-  if (form.name.length < 10) return;
+  if (form.name.length < 4) return;
   if (!validators.email.validate(form.email)) return;
   if (!validators.cpf.validate(form.cpf)) return;
   if (flags.check_card_infos) {
@@ -720,6 +784,7 @@ function ScreenPayment(props) {
   async function submit() {
     const form = props.formValuesRef.current;
     const valid = validateForm(form, {
+      // validate card if the tab is the first (card paying)
       check_card_infos: form.tab == 0
     });
     if (!valid) return window.scrollTo({ top: 0, behavior: "smooth" });
@@ -735,8 +800,17 @@ function ScreenPayment(props) {
         product_id: props.product.id
       });
       console.log("[SUBMIT] card payment got:", payment);
-      props.paymentDataRef.current = payment;
-      props.setScreen("pix_confirming");
+      props.paymentDataRef.current.card = payment;
+      alert("Mensagem do banco: ID(" + payment.id + ") " + payment.status);
+    } else if (form.tab == 1) {
+      const payment = await createBoletoPayment({
+        product_id: props.product.id,
+        payer_fullname: form.name,
+        payer_email: form.email,
+        payer_cpf: form.cpf
+      });
+      props.paymentDataRef.current.boleto = payment;
+      props.setScreen("boleto_confirming");
     } else if (form.tab == 2) {
       const payment = await createPIXPayment({
         payer_name: form.name,
@@ -744,7 +818,7 @@ function ScreenPayment(props) {
         payer_cpf: form.cpf,
         product_id: props.product.id
       });
-      props.paymentDataRef.current = payment;
+      props.paymentDataRef.current.pix = payment;
       props.setScreen("pix_scanning");
     }
   }
@@ -767,7 +841,6 @@ function ScreenPayment(props) {
           id: "name",
           name: "Nome completo",
           mask: (value) => value.slice(0, 125),
-          validate: (value) => value.length > 10,
           initialValue: ""
         }
       ),
@@ -904,12 +977,16 @@ const bullshitFooter = /* @__PURE__ */ jsxs("article", { className: "opacity-50 
 ] });
 
 function ScreenPixConfirming(props) {
+  const pix = props.paymentDataRef.current.pix;
+  if (!pix) {
+    props.setScreen("payment");
+    return /* @__PURE__ */ jsx(Fragment, {});
+  }
+  const id = pix.id;
   const [finished, setFinished] = useState(false);
   const timerRef = useRef(null);
   async function checkPaymentStatus(interval) {
-    const response = await fetch(
-      "/api/status?id=" + props.paymentDataRef.current?.id
-    );
+    const response = await fetch("/api/status?id=" + id);
     const updated = await response.json();
     if (updated.status == "approved") {
       setFinished(true);
@@ -965,7 +1042,7 @@ function ScreenPixConfirming(props) {
         /* @__PURE__ */ jsxs("div", { children: [
           /* @__PURE__ */ jsxs("div", { className: "text-center text-lg text-gray-700", children: [
             "ID: ",
-            props.paymentDataRef.current?.id
+            id
           ] }),
           " ",
           /* @__PURE__ */ jsx(
@@ -993,7 +1070,7 @@ function ScreenPixConfirming(props) {
           " ",
           /* @__PURE__ */ jsx("p", { children: "Quando o pagamento for identificado, essa tela atualizará automaticamente, e você também vai receber um email." })
         ] }) }),
-        props.paymentDataRef.current?.kind == "pix" && /* @__PURE__ */ jsxs("div", { children: [
+        /* @__PURE__ */ jsxs("div", { children: [
           /* @__PURE__ */ jsx("div", { className: "text-center text-lg text-gray-700", children: "Ainda não fez o pagamento?" }),
           " ",
           /* @__PURE__ */ jsx(
@@ -1016,8 +1093,11 @@ function ScreenPixConfirming(props) {
 }
 
 function ScreenPixScanning(props) {
-  const code = props.paymentDataRef.current?.interactions?.code;
-  const qrcode = props.paymentDataRef.current?.interactions?.qrcode;
+  const pix = props.paymentDataRef.current.pix;
+  if (!pix) {
+    props.setScreen("payment");
+    return /* @__PURE__ */ jsx(Fragment, {});
+  }
   return /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-8 w-[672px] font-opensans", children: [
     /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-4 px-4", children: [
       /* @__PURE__ */ jsx(
@@ -1047,11 +1127,17 @@ function ScreenPixScanning(props) {
       ] }),
       /* @__PURE__ */ jsx("div", { className: "text-center text-black mt-2", children: "A aprovação leva no máximo 2 minutos." }),
       /* @__PURE__ */ jsxs("div", { className: "text-center flex flex-col items-center justify-center w-full px-4 md:px-16 mt-8", children: [
-        qrcode && /* @__PURE__ */ jsx("img", { className: "w-1/3", src: "data:image/jpeg;base64," + qrcode }),
+        pix.interactions.qrcode && /* @__PURE__ */ jsx(
+          "img",
+          {
+            className: "w-1/3",
+            src: "data:image/jpeg;base64," + pix.interactions.qrcode
+          }
+        ),
         /* @__PURE__ */ jsx(
           "a",
           {
-            onClick: () => code && navigator.clipboard.writeText(code),
+            onClick: () => pix.interactions.code && navigator.clipboard.writeText(pix.interactions.code),
             className: "cursor-pointer flex relative justify-center w-full md:w-3/4 border text-white bg-gray-800 font-bold p-3 text-sm rounded text-center",
             children: /* @__PURE__ */ jsx("div", { children: /* @__PURE__ */ jsxs("div", { className: "flex justify-center items-center", children: [
               /* @__PURE__ */ jsx(IconCopy, {}),
@@ -1084,12 +1170,13 @@ function ScreenPixScanning(props) {
 function Checkout(props) {
   const [screen, setScreen] = useState("payment");
   const formValuesRef = useRef({});
-  const paymentDataRef = useRef();
+  const paymentDataRef = useRef({});
   const receiveFormValues = (field, value) => {
     formValuesRef.current[field] = value;
   };
   const screens = {
     payment: ScreenPayment,
+    boleto_confirming: ScreenBoletoConfirming,
     pix_scanning: ScreenPixScanning,
     pix_confirming: ScreenPixConfirming
   };

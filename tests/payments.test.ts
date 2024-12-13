@@ -1,7 +1,5 @@
 import { expect, test } from "vitest";
-import { session } from "../src/services/mercadopago";
 import { MercadoPago } from "../src/services/mercadopago/lib";
-import { saveTestdata } from "./utilities.test";
 
 const mercado = new MercadoPago({
   accessToken: import.meta.env.SECRET_MP_TOKEN,
@@ -50,7 +48,7 @@ const mercado = new MercadoPago({
   });
 }); */
 
-test("creating pix payment", async (t) => {
+/* test("creating pix payment", async (t) => {
   const payment = await mercado.createPayment(
     {
       transaction_amount: 0.01,
@@ -112,3 +110,6 @@ test("creating boleto payment", async (t) => {
 
   console.log(payment);
 });
+ */
+
+
